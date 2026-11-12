@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900 flex items-center space-x-2">
+                <span>Market Timing Advisor</span>
+                <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded-full font-bold">Feature 5</span>
+            </h1>
+            <p class="text-xs text-slate-500 font-medium">Algorithmic buy/hold/sell advisory based on cattle lactation curves, age depreciation, feed margins, and festival price surges.</p>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <span class="text-xs font-bold text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl flex items-center space-x-1.5 shadow-sm">
+                <i class="fa-solid fa-bolt text-amber-500"></i>
+                <span>Pongal / Cattle Fair Season: <strong>Peak Margin</strong></span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Market Flash Summary Banner -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex items-center space-x-4">
+            <div class="p-3 bg-emerald-50 rounded-2xl text-emerald-600">
+                <i class="fa-solid fa-chart-line text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Today's Milk Price</p>
+                <p class="text-2xl font-black text-slate-900">₹{{ ticker.today_price }}/L</p>
+                <p class="text-[10px] text-emerald-600 font-bold">+{{ ((ticker.today_price - ticker.yesterday_price) / ticker.yesterday_price * 100)|round(1) }}% vs yesterday</p>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex items-center space-x-4">
+            <div class="p-3 bg-blue-50 rounded-2xl text-blue-600">
+                <i class="fa-solid fa-crown text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">A2 Organic Kangeyam Milk</p>
+                <p class="text-2xl font-black text-blue-700">₹{{ ticker.a2_premium }}/L</p>
+                <p class="text-[10px] text-blue-600 font-bold">Premium Direct-to-Consumer</p>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex items-center space-x-4">
+            <div class="p-3 bg-amber-50 rounded-2xl text-amber-600">
+                <i class="fa-solid fa-hand-holding-dollar text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tomorrow Projected Price</p>
+                <p class="text-2xl font-black text-amber-700">₹{{ ticker.tomorrow_price }}/L</p>
+                <p class="text-[10px] text-slate-400 font-bold">Based on Mandi Demand</p>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex items-center space-x-4">
+            <div class="p-3 bg-purple-50 rounded-2xl text-purple-600">
+                <i class="fa-solid fa-sack-dollar text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Herd Market Value</p>
+                <p class="text-2xl font-black text-purple-900">₹{{ "{:,}".format(advice_list|sum(attribute='current_market_value')|int) }}</p>
+                <p class="text-[10px] text-purple-600 font-bold">Live Asset Base</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cattle Market Timing Table -->
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+            <div>
+                <h2 class="text-base font-bold text-slate-900">Individual Cattle Recommendation & Holding Horizon</h2>
+                <p class="text-xs text-slate-400">Maximize net revenue by synchronizing culling, breeding cycles, and market price spikes.</p>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-100 text-xs">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-6 py-3.5 text-left font-bold text-slate-500 uppercase tracking-wider">Animal</th>
+                        <th class="px-6 py-3.5 text-left font-bold text-slate-500 uppercase tracking-wider">Current Value</th>
+                        <th class="px-6 py-3.5 text-center font-bold text-slate-500 uppercase tracking-wider">Market Advice</th>
+                        <th class="px-6 py-3.5 text-center font-bold text-slate-500 uppercase tracking-wider">Optimal Window</th>
+                        <th class="px-6 py-3.5 text-left font-bold text-slate-500 uppercase tracking-wider">Projected 30d / 90d Net</th>
+                        <th class="px-6 py-3.5 text-left font-bold text-slate-500 uppercase tracking-wider">Actionable Strategy</th>
+                        <th class="px-6 py-3.5 text-center font-bold text-slate-500 uppercase tracking-wider">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                    {% for c in advice_list %}
+                    <tr class="hover:bg-slate-50/70 transition">
+                        <!-- Animal Photo & ID -->
+                        <td class="px-6 py-3.5 whitespace-nowrap">
+                            <div class="flex items-center space-x-3">
+                                <img src="{{ c.image_url or 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=600&q=80' }}" 
+                                     alt="{{ c.name }}" class="w-11 h-11 rounded-xl object-cover border border-slate-200 shadow-sm">
+                                <div>
+                                    <div class="font-bold text-slate-900 text-sm">{{ c.name }}</div>
+                                    <div class="font-mono text-emerald-800 text-[11px] font-bold">{{ c.cattle_id }} &bull; {{ c.age }}y</div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Current Valuation -->
+                        <td class="px-6 py-3.5 whitespace-nowrap">
+                            <div class="font-extrabold text-slate-900 text-sm">₹{{ "{:,}".format(c.current_market_value|int) }}</div>
+                            <div class="text-[10px] text-slate-400">Peak: ₹{{ "{:,}".format(c.peak_festival_value|int) }}</div>
+                        </td>
+
+                        <!-- Advice Badge -->
+                        <td class="px-6 py-3.5 whitespace-nowrap text-center">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold
+                                {% if c.action_badge == 'HOLD_PEAK' %} bg-emerald-100 text-emerald-800 border border-emerald-300
+                                {% elif c.action_badge == 'BREED_FIRST' %} bg-blue-100 text-blue-800 border border-blue-300
+                                {% elif c.action_badge == 'MONITOR_FEED' %} bg-amber-100 text-amber-800 border border-amber-300
+                                {% else %} bg-red-100 text-red-800 border border-red-300 {% endif %}">
+                                {{ c.advice }}
+                            </span>
+                        </td>
+
+                        <!-- Optimal Window -->
+                        <td class="px-6 py-3.5 whitespace-nowrap text-center">
+                            <span class="font-bold text-slate-800 text-xs">{{ c.optimal_window }}</span>
+                        </td>
+
+                        <!-- 30d & 90d Projections -->
+                        <td class="px-6 py-3.5 whitespace-nowrap">
+                            <div class="space-y-0.5">
+                                <div class="font-semibold text-slate-700">30d: <strong class="{% if c.projected_net_30d >= 0 %} text-emerald-700 {% else %} text-red-600 {% endif %}">₹{{ "{:,}".format(c.projected_net_30d|int) }}</strong></div>
+                                <div class="font-semibold text-slate-700">90d: <strong class="{% if c.projected_net_90d >= 0 %} text-emerald-700 {% else %} text-red-600 {% endif %}">₹{{ "{:,}".format(c.projected_net_90d|int) }}</strong></div>
+                            </div>
+                        </td>
+
+                        <!-- Strategic Reason -->
+                        <td class="px-6 py-3.5 max-w-xs">
+                            <p class="text-slate-600 font-medium text-[11px] leading-relaxed">{{ c.reason }}</p>
+                        </td>
+
+                        <!-- Action -->
+                        <td class="px-6 py-3.5 whitespace-nowrap text-center">
+                            <a href="{{ url_for('cattle_detail', id=c.cattle_id) }}" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold px-3 py-1.5 rounded-lg text-xs transition">
+                                Strategy &rarr;
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

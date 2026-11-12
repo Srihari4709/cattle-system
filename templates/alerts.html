@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900 flex items-center space-x-2">
+                <span>Active Farm Alert System</span>
+                <span class="bg-red-100 text-red-800 text-xs px-2.5 py-0.5 rounded-full font-bold">Feature 7</span>
+            </h1>
+            <p class="text-xs text-slate-500 font-medium">Categorized anomaly detection for vaccination schedules, production declines, sudden yield drops, and economic cost imbalances.</p>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <span class="bg-red-500/10 text-red-700 border border-red-200 px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center space-x-1.5">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>{{ total_count }} Active Alert(s) Detected</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Alert Breakdown Metric Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+        
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Vaccination Overdue</span>
+                <div class="w-6 h-6 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center text-xs font-bold">
+                    <i class="fa-solid fa-syringe"></i>
+                </div>
+            </div>
+            <div class="mt-2">
+                <span class="text-2xl font-black text-rose-700">{{ alerts_by_category['vaccination_overdue']|length }}</span>
+                <span class="text-[10px] text-slate-400 block font-semibold">Critical Health Risk</span>
+            </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Sudden Milk Drop</span>
+                <div class="w-6 h-6 rounded-lg bg-red-100 text-red-600 flex items-center justify-center text-xs font-bold">
+                    <i class="fa-solid fa-arrow-down-long"></i>
+                </div>
+            </div>
+            <div class="mt-2">
+                <span class="text-2xl font-black text-red-700">{{ alerts_by_category['sudden_drop']|length }}</span>
+                <span class="text-[10px] text-slate-400 block font-semibold">&gt;20% Sudden Decrease</span>
+            </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Declining Yield</span>
+                <div class="w-6 h-6 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center text-xs font-bold">
+                    <i class="fa-solid fa-arrow-trend-down"></i>
+                </div>
+            </div>
+            <div class="mt-2">
+                <span class="text-2xl font-black text-amber-700">{{ alerts_by_category['declining_milk']|length }}</span>
+                <span class="text-[10px] text-slate-400 block font-semibold">3-Day Downward Trend</span>
+            </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">High Cost / High Yield</span>
+                <div class="w-6 h-6 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-bold">
+                    <i class="fa-solid fa-scale-unbalanced"></i>
+                </div>
+            </div>
+            <div class="mt-2">
+                <span class="text-2xl font-black text-purple-800">{{ alerts_by_category['high_cost_high_production']|length }}</span>
+                <span class="text-[10px] text-slate-400 block font-semibold">Margin Squeeze</span>
+            </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Missing Records</span>
+                <div class="w-6 h-6 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
+                    <i class="fa-solid fa-clipboard-question"></i>
+                </div>
+            </div>
+            <div class="mt-2">
+                <span class="text-2xl font-black text-blue-800">{{ alerts_by_category['missing_health']|length }}</span>
+                <span class="text-[10px] text-slate-400 block font-semibold">Need Attention</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Categorized Alert Sections -->
+    <div class="space-y-6">
+
+        <!-- 1. VACCINATION OVERDUE ALERTS -->
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="px-6 py-4 bg-rose-50/70 border-b border-rose-100 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-syringe text-rose-600"></i>
+                    <h2 class="text-sm font-extrabold text-rose-950 uppercase tracking-wider">1. Vaccination Overdue Warnings ({{ alerts_by_category['vaccination_overdue']|length }})</h2>
+                </div>
+                <span class="text-[11px] font-bold text-rose-700">Immediate Vet Action Required</span>
+            </div>
+            <div class="p-6">
+                {% if alerts_by_category['vaccination_overdue'] %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {% for a in alerts_by_category['vaccination_overdue'] %}
+                            <div class="p-4 rounded-2xl border border-rose-200 bg-rose-50/40 flex items-start space-x-3.5">
+                                <img src="{{ a.image_url or 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=600&q=80' }}" 
+                                     alt="{{ a.name }}" class="w-12 h-12 rounded-xl object-cover border border-rose-200 shadow-sm flex-shrink-0">
+                                <div class="flex-1 text-xs space-y-1">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="font-bold text-slate-900 text-sm">{{ a.name }} ({{ a.cattle_id }})</h3>
+                                        <span class="text-[10px] font-extrabold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full">URGENT</span>
+                                    </div>
+                                    <p class="text-slate-600">{{ a.message }}</p>
+                                    <div class="pt-1 flex items-center space-x-2">
+                                        <a href="{{ url_for('log_vaccination_booster', id=a.cattle_id) }}" class="text-rose-700 hover:text-rose-900 font-bold underline">
+                                            Log Vaccination Booster &rarr;
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-xs text-slate-400 italic">No vaccination overdue warnings. All herd vaccine boosters are up to date.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 2. SUDDEN MILK PRODUCTION DECREASE -->
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="px-6 py-4 bg-red-50/70 border-b border-red-100 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-arrow-down-long text-red-600"></i>
+                    <h2 class="text-sm font-extrabold text-red-950 uppercase tracking-wider">2. Sudden Milk Production Decrease Alerts ({{ alerts_by_category['sudden_drop']|length }})</h2>
+                </div>
+                <span class="text-[11px] font-bold text-red-700">Possible Mastitis or Acute Illness</span>
+            </div>
+            <div class="p-6">
+                {% if alerts_by_category['sudden_drop'] %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {% for a in alerts_by_category['sudden_drop'] %}
+                            <div class="p-4 rounded-2xl border border-red-200 bg-red-50/40 flex items-start space-x-3.5">
+                                <img src="{{ a.image_url or 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=600&q=80' }}" 
+                                     alt="{{ a.name }}" class="w-12 h-12 rounded-xl object-cover border border-red-200 shadow-sm flex-shrink-0">
+                                <div class="flex-1 text-xs space-y-1">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="font-bold text-slate-900 text-sm">{{ a.name }} ({{ a.cattle_id }})</h3>
+                                        <span class="text-[10px] font-extrabold text-red-700 bg-red-100 px-2 py-0.5 rounded-full">CLINICAL DROP</span>
+                                    </div>
+                                    <p class="text-slate-600">{{ a.message }}</p>
+                                    <div class="pt-1 flex items-center space-x-2">
+                                        <a href="{{ a.action_url }}" class="text-red-700 hover:text-red-900 font-bold underline">
+                                            Open Diagnostic Profile &rarr;
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-xs text-slate-400 italic">No sudden production drops recorded across the herd.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 3. DECLINING MILK PRODUCTION -->
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="px-6 py-4 bg-amber-50/70 border-b border-amber-100 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-arrow-trend-down text-amber-600"></i>
+                    <h2 class="text-sm font-extrabold text-amber-950 uppercase tracking-wider">3. Declining Milk Production Trends ({{ alerts_by_category['declining_milk']|length }})</h2>
+                </div>
+                <span class="text-[11px] font-bold text-amber-700">Consecutive Day Drops</span>
+            </div>
+            <div class="p-6">
+                {% if alerts_by_category['declining_milk'] %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {% for a in alerts_by_category['declining_milk'] %}
+                            <div class="p-4 rounded-2xl border border-amber-200 bg-amber-50/40 flex items-start space-x-3.5">
+                                <img src="{{ a.image_url or 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=600&q=80' }}" 
+                                     alt="{{ a.name }}" class="w-12 h-12 rounded-xl object-cover border border-amber-200 shadow-sm flex-shrink-0">
+                                <div class="flex-1 text-xs space-y-1">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="font-bold text-slate-900 text-sm">{{ a.name }} ({{ a.cattle_id }})</h3>
+                                        <span class="text-[10px] font-extrabold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">TREND</span>
+                                    </div>
+                                    <p class="text-slate-600">{{ a.message }}</p>
+                                    <div class="pt-1 flex items-center space-x-2">
+                                        <a href="{{ a.action_url }}" class="text-amber-700 hover:text-amber-900 font-bold underline">
+                                            Review Nutrition & Feed &rarr;
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-xs text-slate-400 italic">No persistent declining yield trends detected.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 4. HIGH MILK PRODUCTION BUT HIGH MAINTENANCE COST -->
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="px-6 py-4 bg-purple-50/70 border-b border-purple-100 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-scale-unbalanced text-purple-600"></i>
+                    <h2 class="text-sm font-extrabold text-purple-950 uppercase tracking-wider">4. High Production But High Maintenance Cost ({{ alerts_by_category['high_cost_high_production']|length }})</h2>
+                </div>
+                <span class="text-[11px] font-bold text-purple-700">Economic Efficiency Anomaly</span>
+            </div>
+            <div class="p-6">
+                {% if alerts_by_category['high_cost_high_production'] %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {% for a in alerts_by_category['high_cost_high_production'] %}
+                            <div class="p-4 rounded-2xl border border-purple-200 bg-purple-50/40 flex items-start space-x-3.5">
+                                <img src="{{ a.image_url or 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=600&q=80' }}" 
+                                     alt="{{ a.name }}" class="w-12 h-12 rounded-xl object-cover border border-purple-200 shadow-sm flex-shrink-0">
+                                <div class="flex-1 text-xs space-y-1">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="font-bold text-slate-900 text-sm">{{ a.name }} ({{ a.cattle_id }})</h3>
+                                        <span class="text-[10px] font-extrabold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">COST SQUEEZE</span>
+                                    </div>
+                                    <p class="text-slate-600">{{ a.message }}</p>
+                                    <div class="pt-1 flex items-center space-x-2">
+                                        <a href="{{ a.action_url }}" class="text-purple-700 hover:text-purple-900 font-bold underline">
+                                            Analyze Feed Conversion & Cost &rarr;
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-xs text-slate-400 italic">No margin compression alerts detected. Feed costs are proportionate to yield.</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

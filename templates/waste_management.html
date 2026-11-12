@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900 flex items-center space-x-2">
+                <span>Waste Management & Biogas Valuation</span>
+                <span class="bg-amber-100 text-amber-800 text-xs px-2.5 py-0.5 rounded-full font-bold">Feature 8 & 9</span>
+            </h1>
+            <p class="text-xs text-slate-500 font-medium">Record daily dung/urine excretion, track organic waste utilization, and calculate biogas, LPG, compost & liquid fertilizer yields.</p>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <button onclick="document.getElementById('logWasteCard').classList.toggle('hidden')" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">
+                <i class="fa-solid fa-plus"></i>
+                <span>Log Daily Dung / Waste</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Feature 9: INTERACTIVE WASTE CONVERSION CALCULATOR HERO -->
+    <div class="bg-gradient-to-br from-amber-950 via-slate-900 to-emerald-950 text-white p-6 rounded-3xl shadow-xl border border-amber-800/40 relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 opacity-10 text-9xl text-amber-400">
+            <i class="fa-solid fa-fire-burner"></i>
+        </div>
+
+        <div class="relative z-10 space-y-5">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+                <div>
+                    <span class="bg-amber-500/20 text-amber-300 border border-amber-400/30 text-[10px] px-2.5 py-0.5 rounded-full font-extrabold uppercase tracking-wider">
+                        Feature 9: Organic Waste Conversion Calculator
+                    </span>
+                    <h2 class="text-xl font-black text-white mt-1">Total Herd Waste Conversion & Energy Harvest</h2>
+                </div>
+                
+                <!-- Total Valuation Summary Tag -->
+                <div class="bg-white/10 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/15 text-right">
+                    <span class="text-[10px] uppercase font-bold text-slate-300">Daily Circular Economy Value</span>
+                    <p class="text-2xl font-black text-emerald-400">₹{{ "{:,}".format(waste_calc.total_daily_value|int) }}/day</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div class="bg-white/10 rounded-xl border border-white/10 px-3 py-2"><span class="text-slate-300">Dung value</span><strong class="block text-amber-300 text-base">₹{{ "%.2f"|format(waste_calc.dung_value_inr) }}</strong></div>
+                <div class="bg-white/10 rounded-xl border border-white/10 px-3 py-2"><span class="text-slate-300">Urine value</span><strong class="block text-teal-300 text-base">₹{{ "%.2f"|format(waste_calc.urine_value_inr) }}</strong></div>
+                <div class="bg-white/10 rounded-xl border border-white/10 px-3 py-2"><span class="text-slate-300">Total organic waste value</span><strong class="block text-emerald-300 text-base">₹{{ "%.2f"|format(waste_calc.organic_waste_value_inr) }}</strong></div>
+            </div>
+
+            <!-- Conversion Metrics Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+                
+                <!-- 1. Daily Dung Input -->
+                <div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
+                    <div class="text-amber-400 text-lg mb-1"><i class="fa-solid fa-cow"></i></div>
+                    <span class="text-[10px] font-bold text-slate-300 uppercase">Daily Dung Harvest</span>
+                    <p class="text-2xl font-black text-white mt-1">{{ waste_calc.dung_kg }} <span class="text-xs text-slate-400">kg</span></p>
+                    <span class="text-[10px] text-amber-300 font-semibold">{{ waste_calc.urine_l }} L urine</span>
+                </div>
+
+                <!-- 2. Biogas Output -->
+                <div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
+                    <div class="text-cyan-400 text-lg mb-1"><i class="fa-solid fa-fire-burner"></i></div>
+                    <span class="text-[10px] font-bold text-slate-300 uppercase">Biogas Generated</span>
+                    <p class="text-2xl font-black text-white mt-1">{{ waste_calc.biogas_m3 }} <span class="text-xs text-slate-400">m³</span></p>
+                    <span class="text-[10px] text-cyan-300 font-semibold">{{ waste_calc.lpg_equiv_kg }} kg LPG eq.</span>
+                </div>
+
+                <!-- 3. LPG Cost Savings -->
+                <div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
+                    <div class="text-emerald-400 text-lg mb-1"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+                    <span class="text-[10px] font-bold text-slate-300 uppercase">LPG Energy Savings</span>
+                    <p class="text-2xl font-black text-emerald-300 mt-1">₹{{ "{:,}".format(waste_calc.lpg_savings_rupees|int) }}</p>
+                    <span class="text-[10px] text-emerald-400 font-semibold">₹{{ "{:,}".format(waste_calc.lpg_savings_rupees|int * 30) }}/mo</span>
+                </div>
+
+                <!-- 4. Solid Organic Compost -->
+                <div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
+                    <div class="text-yellow-400 text-lg mb-1"><i class="fa-solid fa-seedling"></i></div>
+                    <span class="text-[10px] font-bold text-slate-300 uppercase">Organic Compost</span>
+                    <p class="text-2xl font-black text-white mt-1">{{ waste_calc.compost_kg }} <span class="text-xs text-slate-400">kg</span></p>
+                    <span class="text-[10px] text-yellow-300 font-semibold">Value: ₹{{ "{:,}".format(waste_calc.compost_value_rupees|int) }}</span>
+                </div>
+
+                <!-- 5. Liquid Bio-Fertilizer -->
+                <div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
+                    <div class="text-teal-400 text-lg mb-1"><i class="fa-solid fa-droplet"></i></div>
+                    <span class="text-[10px] font-bold text-slate-300 uppercase">Liquid Bio-Fertilizer</span>
+                    <p class="text-2xl font-black text-white mt-1">{{ waste_calc.liquid_fertilizer_liters }} <span class="text-xs text-slate-400">L</span></p>
+                    <span class="text-[10px] text-teal-300 font-semibold">Value: ₹{{ "{:,}".format(waste_calc.liquid_fert_value_rupees|int) }}</span>
+                </div>
+
+            </div>
+
+            <!-- Carbon Offset Footprint Notice -->
+            <div class="pt-2 flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs text-slate-300 border-t border-white/10">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-leaf text-emerald-400"></i>
+                    <span><strong>Green Methane Abatement:</strong> Prevents {{ waste_calc.carbon_offset_kg_co2e }} kg CO₂e greenhouse methane emissions daily.</span>
+                </div>
+                <span class="text-[11px] text-slate-400 font-mono">1 kg Dung &rarr; 0.045 m³ Biogas | 0.35 kg Compost | 2.5 L Bio-Fertilizer</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 8: Log Daily Dung Card (Collapsible) -->
+    <div id="logWasteCard" class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 hidden">
+        <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center space-x-2">
+            <i class="fa-solid fa-recycle text-amber-600"></i>
+            <span>Log Daily Cattle Dung & Organic Excretion</span>
+        </h2>
+
+        <form action="{{ url_for('waste_management') }}" method="POST" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Select Cattle ID</label>
+                <select name="cattle_id" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs focus:ring-2 focus:ring-amber-500 font-bold text-slate-800">
+                    {% for c in cattles %}
+                        <option value="{{ c.cattle_id }}">{{ c.name }} ({{ c.cattle_id }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Record Date</label>
+                <input type="date" name="record_date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs focus:ring-2 focus:ring-amber-500">
+            </div>
+
+            <div>
+                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Dung Collected (kg)</label>
+                <input type="number" step="0.1" name="dung_weight_kg" placeholder="e.g. 14.5" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs focus:ring-2 focus:ring-amber-500 font-bold">
+            </div>
+
+            <div>
+                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Urine Output (Liters, Opt)</label>
+                <input type="number" step="0.1" name="urine_liters" placeholder="e.g. 8.0" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs focus:ring-2 focus:ring-amber-500">
+            </div>
+
+            <div class="sm:col-span-2 lg:col-span-3">
+                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Collection Notes / Digester Input Tag</label>
+                <input type="text" name="notes" placeholder="e.g. Morning barn collection routed to main anaerobic biogas digester" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs focus:ring-2 focus:ring-amber-500">
+            </div>
+
+            <div class="flex items-end justify-end space-x-2">
+                <button type="button" onclick="document.getElementById('logWasteCard').classList.add('hidden')" class="bg-slate-100 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs">
+                    Cancel
+                </button>
+                <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition shadow-sm">
+                    Save Record
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Historical Organic Waste Records Table -->
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+                <h2 class="text-base font-bold text-slate-900">Herd Daily Organic Waste Log Book</h2>
+                <p class="text-xs text-slate-400">Total recorded dung, urine, and biogas output potentials across the herd.</p>
+            </div>
+            <span class="text-xs font-bold text-slate-500">{{ records|length }} Total Logs</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-100 text-xs">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-6 py-3.5 text-left font-bold text-slate-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3.5 text-left font-bold text-slate-500 uppercase tracking-wider">Animal ID</th>
+                        <th class="px-6 py-3.5 text-left font-bold text-slate-500 uppercase tracking-wider">Dung (kg)</th>
+                        <th class="px-6 py-3.5 text-left font-bold text-slate-500 uppercase tracking-wider">Urine (L)</th>
+                        <th class="px-6 py-3.5 text-left font-bold text-slate-500 uppercase tracking-wider">Biogas (m³)</th>
+                        <th class="px-6 py-3.5 text-left font-bold text-slate-500 uppercase tracking-wider">Compost (kg)</th>
+                        <th class="px-6 py-3.5 text-left font-bold text-slate-500 uppercase tracking-wider">Notes</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                    {% for r in records %}
+                    <tr class="hover:bg-slate-50/70 transition">
+                        <td class="px-6 py-3.5 whitespace-nowrap font-mono text-slate-600">{{ r.record_date }}</td>
+                        <td class="px-6 py-3.5 whitespace-nowrap font-bold text-emerald-800">
+                            <a href="{{ url_for('cattle_detail', id=r.cattle_id) }}" class="hover:underline">
+                                {{ r.name }} ({{ r.cattle_id }})
+                            </a>
+                        </td>
+                        <td class="px-6 py-3.5 whitespace-nowrap font-bold text-slate-900">{{ r.dung_weight_kg }} kg</td>
+                        <td class="px-6 py-3.5 whitespace-nowrap text-slate-600">{{ r.urine_liters }} L</td>
+                        <td class="px-6 py-3.5 whitespace-nowrap font-semibold text-cyan-700">~{{ (r.dung_weight_kg * 0.045)|round(2) }} m³</td>
+                        <td class="px-6 py-3.5 whitespace-nowrap font-semibold text-yellow-700">~{{ (r.dung_weight_kg * 0.35)|round(2) }} kg</td>
+                        <td class="px-6 py-3.5 text-slate-500 max-w-xs truncate">{{ r.notes or '--' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

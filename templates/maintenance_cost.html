@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <div>
+        <h1 class="text-2xl font-extrabold text-slate-900">Maintenance Cost Calculator</h1>
+        <p class="text-xs text-slate-500 mt-1">Enter daily operating costs for each animal to calculate and save the maintenance total.</p>
+    </div>
+
+    {% if cattle %}
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        {% for animal in cattle %}
+        <form action="{{ url_for('add_log', id=animal.id) }}" method="POST" class="maintenance-form bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-4">
+            <input type="hidden" name="log_type" value="financial">
+            <input type="hidden" name="log_date" value="{{ now_date }}">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                    <h2 class="font-extrabold text-slate-900">{{ animal.name }}</h2>
+                    <p class="text-xs font-mono text-emerald-700">{{ animal.id }}</p>
+                </div>
+                <span class="text-xs text-slate-400">Last: ₹{{ "%.2f"|format(animal.latest_maintenance) }}/day</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                {% for field, label in [('feed_cost', 'Feed'), ('labor_cost', 'Labor'), ('housing_cost', 'Housing'), ('medicine_cost', 'Medicine'), ('other_cost', 'Other')] %}
+                <label class="text-xs font-semibold text-slate-500">{{ label }} Cost (₹/day)
+                    <input type="number" step="0.1" min="0" name="{{ field }}" value="0" required class="maintenance-component mt-1 w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs">
+                </label>
+                {% endfor %}
+                <label class="text-xs font-semibold text-slate-500">Market Value (₹)
+                    <input type="number" step="1" min="0" name="market_value" value="{{ animal.current_market_value or 0 }}" required class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs">
+                </label>
+            </div>
+            <div class="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
+                <span class="text-xs font-bold text-emerald-800">Calculated Maintenance / day</span>
+                <input type="number" name="maintenance_cost" value="0.00" readonly class="maintenance-total w-28 bg-transparent text-right text-sm font-extrabold text-emerald-800 outline-none">
+            </div>
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition shadow-sm">
+                <i class="fa-solid fa-calculator mr-1"></i> Calculate & Save
+            </button>
+        </form>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white p-8 rounded-3xl border border-slate-100 text-center text-sm text-slate-500">No cattle profiles registered yet.</div>
+    {% endif %}
+</div>
+
+<script>
+    document.querySelectorAll('.maintenance-form').forEach(form => {
+        const updateTotal = () => {
+            const total = Array.from(form.querySelectorAll('.maintenance-component'))
+                .reduce((sum, field) => sum + (parseFloat(field.value) || 0), 0);
+            form.querySelector('.maintenance-total').value = total.toFixed(2);
+        };
+        form.querySelectorAll('.maintenance-component').forEach(input => input.addEventListener('input', updateTotal));
+        updateTotal();
+    });
+</script>
+{% endblock %}

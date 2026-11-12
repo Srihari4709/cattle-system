@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    
+    <!-- Title & Add Trigger -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900 flex items-center space-x-2">
+                <span>Manage Cattle Directory</span>
+                <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded-full font-bold">QR Tagged</span>
+            </h1>
+            <p class="text-xs text-slate-500 font-medium">Register and track individual profiles, images, and QR identities for the Kangeyam herd.</p>
+        </div>
+        
+        <button onclick="document.getElementById('registerFormCard').classList.toggle('hidden')" 
+                class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition duration-150 flex items-center space-x-2">
+            <i class="fa-solid fa-plus"></i>
+            <span>Register New Animal</span>
+        </button>
+    </div>
+
+    <!-- Feature 1: Registration Form Card with Image Upload & URL (Collapsible) -->
+    <div id="registerFormCard" class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 hidden">
+        <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center space-x-2">
+            <i class="fa-solid fa-file-signature text-emerald-600"></i>
+            <span>New Cattle Registration & Digital Identity Tag</span>
+        </h2>
+        
+        <form action="{{ url_for('cattle_list') }}" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <!-- Animal ID -->
+            <div class="space-y-1">
+                <label for="cattle_id" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Cattle ID (Unique Tag)</label>
+                <input type="text" id="cattle_id" name="cattle_id" required placeholder="e.g. KANG-008" 
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-mono font-bold text-emerald-800">
+            </div>
+
+            <!-- Name -->
+            <div class="space-y-1">
+                <label for="name" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Name / Alias</label>
+                <input type="text" id="name" name="name" required placeholder="e.g. Ganga (Prime Dairy Cow)" 
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+            </div>
+
+            <!-- Age -->
+            <div class="space-y-1">
+                <label for="age" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Age (Years)</label>
+                <input type="number" step="0.1" min="0" id="age" name="age" required placeholder="e.g. 3.5" 
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+            </div>
+
+            <!-- Breed -->
+            <div class="space-y-1">
+                <label for="breed" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Breed</label>
+                <input type="text" id="breed" name="breed" value="Kangeyam" required readonly 
+                       class="w-full bg-slate-100 border border-slate-200 rounded-xl py-2.5 px-3 text-sm text-slate-500 focus:outline-none cursor-not-allowed">
+            </div>
+
+            <!-- Purchase Date -->
+            <div class="space-y-1">
+                <label for="purchase_date" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Purchase Date</label>
+                <input type="date" id="purchase_date" name="purchase_date" required 
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+            </div>
+
+            <!-- Purchase Price -->
+            <div class="space-y-1">
+                <label for="purchase_price" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Purchase Price (₹)</label>
+                <input type="number" step="1" min="0" id="purchase_price" name="purchase_price" placeholder="e.g. 45000" 
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+            </div>
+
+            <!-- Initial Est Market Value -->
+            <div class="space-y-1">
+                <label for="market_value" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Initial Market Value (₹)</label>
+                <input type="number" step="1" min="0" id="market_value" name="market_value" placeholder="e.g. 45000" 
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+            </div>
+
+            <div class="space-y-1">
+                <label for="milk_production" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Initial Milk Production (Liters/day)</label>
+                <input type="number" step="0.1" min="0" id="milk_production" name="milk_production" value="0" placeholder="e.g. 8.5"
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+            </div>
+
+            <div class="space-y-1">
+                <label for="feed_consumption" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Initial Feed Consumption (kg/day)</label>
+                <input type="number" step="0.1" min="0" id="feed_consumption" name="feed_consumption" value="4" placeholder="e.g. 6.0"
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+            </div>
+
+            <!-- Feature 1: Cattle Image File Upload -->
+            <div class="space-y-1">
+                <label for="image_file" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Upload Cattle Photo (Optional)</label>
+                <input type="file" id="image_file" name="image_file" accept="image/*" 
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+
+            <!-- Feature 1: Cattle Image Direct URL -->
+            <div class="space-y-1">
+                <label for="image_url" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Or Image Web URL</label>
+                <input type="url" id="image_url" name="image_url" placeholder="https://images.unsplash.com/photo-..." 
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="md:col-span-3 flex justify-end space-x-3 pt-4 border-t border-slate-100">
+                <button type="button" onclick="document.getElementById('registerFormCard').classList.add('hidden')" 
+                        class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold transition">
+                    Cancel
+                </button>
+                <button type="submit" 
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition shadow-sm">
+                    <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Save Profile & Generate QR
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Cattle Directory Table -->
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+                <h2 class="text-base font-bold text-slate-900">Herd Registry & QR Identification</h2>
+                <p class="text-xs text-slate-400">Click QR code tag to instantly view mobile pass or print physical collar tags.</p>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-100 text-xs">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-6 py-3.5 text-left font-bold text-slate-500 uppercase tracking-wider">Animal Profile</th>
+                        <th class="px-6 py-3.5 text-left font-bold text-slate-500 uppercase tracking-wider">Breed & Age</th>
+                        <th class="px-6 py-3.5 text-center font-bold text-slate-500 uppercase tracking-wider">Diagnostic Scores</th>
+                        <th class="px-6 py-3.5 text-left font-bold text-slate-500 uppercase tracking-wider">Decision Recommendation</th>
+                        <th class="px-6 py-3.5 text-center font-bold text-slate-500 uppercase tracking-wider">Confidence</th>
+                        <th class="px-6 py-3.5 text-center font-bold text-slate-500 uppercase tracking-wider">QR & Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                    {% for c in cattles %}
+                    <tr class="hover:bg-slate-50/70 transition">
+                        <!-- Animal Photo & ID -->
+                        <td class="px-6 py-3.5 whitespace-nowrap">
+                            <div class="flex items-center space-x-3">
+                                <img src="{{ c.image_url or 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=600&q=80' }}" 
+                                     alt="{{ c.name }}" class="w-12 h-12 rounded-2xl object-cover border border-slate-200 shadow-sm">
+                                <div>
+                                    <div class="font-bold text-slate-900 text-sm">{{ c.name }}</div>
+                                    <div class="font-mono text-emerald-800 font-bold text-xs">{{ c.cattle_id }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-3.5 whitespace-nowrap">
+                            <div class="font-semibold text-slate-800">{{ c.breed }}</div>
+                            <div class="text-[11px] text-slate-400">{{ c.age }} Years</div>
+                        </td>
+                        <!-- Scores breakdown -->
+                        <td class="px-6 py-3.5 whitespace-nowrap text-center">
+                            <div class="inline-grid grid-cols-2 gap-1 text-[10px] font-bold text-left">
+                                <span class="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">H: {{ c.health_score }}</span>
+                                <span class="text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">P: {{ c.productivity_score }}</span>
+                                <span class="text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">E: {{ c.economic_score }}</span>
+                                <span class="text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded">B: {{ c.breeding_score }}</span>
+                            </div>
+                        </td>
+                        <!-- Decision Badge -->
+                        <td class="px-6 py-3.5 whitespace-nowrap">
+                            {% if c.recommendation == 'Continue Dairy Production' %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-250">
+                                    <i class="fa-solid fa-circle-check mr-1.5 text-[9px]"></i> Continue Dairy
+                                </span>
+                            {% elif c.recommendation == 'Breeding Candidate' %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-250">
+                                    <i class="fa-solid fa-seedling mr-1.5 text-[9px]"></i> Breeding Candidate
+                                </span>
+                            {% elif c.recommendation == 'Monitor Closely' %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-250">
+                                    <i class="fa-solid fa-eye mr-1.5 text-[9px]"></i> Monitor Closely
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-100 text-red-800 border border-red-200">
+                                    <i class="fa-solid fa-handshake-slash mr-1.5 text-[9px]"></i> Consider Sale
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-3.5 whitespace-nowrap text-center font-extrabold text-slate-800 text-sm">
+                            {{ c.overall_score }} <span class="text-[10px] text-slate-400 block font-normal">({{ c.confidence_level }}% conf)</span>
+                        </td>
+                        <!-- Feature 2: QR Modal & Profile Actions -->
+                        <td class="px-6 py-3.5 whitespace-nowrap text-center space-x-1.5 font-bold">
+                            <!-- QR Tag Modal Button -->
+                            <button onclick="showQrModal('{{ c.cattle_id }}', '{{ c.name }}', '{{ url_for('cattle_qr_code', id=c.cattle_id) }}', '{{ url_for('cattle_quick_view', id=c.cattle_id) }}')" 
+                                    class="text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1.5 rounded-lg text-xs transition"
+                                    title="View QR Code Identity Tag">
+                                <i class="fa-solid fa-qrcode mr-1"></i> QR Tag
+                            </button>
+
+                            <a href="{{ url_for('cattle_detail', id=c.cattle_id) }}" class="text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg text-xs transition shadow-sm">
+                                Analyze &rarr;
+                            </a>
+                            <a href="{{ url_for('edit_cattle', id=c.cattle_id) }}" title="Edit cattle details" class="text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-lg text-xs transition">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                            
+                            <form action="{{ url_for('delete_cattle', id=c.cattle_id) }}" method="POST" class="inline" 
+                                  onsubmit="return confirm('Are you sure you want to delete profile {{ c.name }}? This action is irreversible.');">
+                                <button type="submit" class="text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg text-xs transition">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Feature 2: QR CODE MODAL PREVIEW POPUP -->
+<div id="qrPreviewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 flex flex-col items-center text-center space-y-4">
+        <div class="w-full flex items-center justify-between border-b border-slate-100 pb-3">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-800">Kangeyam Digital QR Tag</span>
+            <button onclick="closeQrModal()" class="text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <h3 id="modalQrName" class="font-extrabold text-slate-900 text-base">Cattle Name</h3>
+        <p id="modalQrId" class="text-xs font-mono font-bold text-emerald-700 -mt-2">KANG-000</p>
+
+        <!-- QR Image Display -->
+        <div class="p-4 bg-white border-2 border-dashed border-emerald-400 rounded-2xl shadow-inner">
+            <img id="modalQrImage" src="" alt="Cattle QR Code" class="w-48 h-48 mx-auto object-contain">
+        </div>
+
+        <p class="text-[11px] text-slate-400 leading-tight">
+            Scan with any smartphone camera in pasture/shed to immediately access health pass and log GPS location.
+        </p>
+
+        <div class="w-full grid grid-cols-2 gap-2 pt-2">
+            <a id="modalQuickViewBtn" href="#" target="_blank" class="bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold py-2 rounded-xl text-xs transition text-center flex items-center justify-center space-x-1">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                <span>Open Pass</span>
+            </a>
+            <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center space-x-1 shadow-sm">
+                <i class="fa-solid fa-print"></i>
+                <span>Print Tag</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showQrModal(id, name, qrUrl, quickViewUrl) {
+        document.getElementById('modalQrName').innerText = name;
+        document.getElementById('modalQrId').innerText = id;
+        document.getElementById('modalQrImage').src = qrUrl;
+        document.getElementById('modalQuickViewBtn').href = quickViewUrl;
+        document.getElementById('qrPreviewModal').classList.remove('hidden');
+    }
+
+    function closeQrModal() {
+        document.getElementById('qrPreviewModal').classList.add('hidden');
+    }
+</script>
+{% endblock %}
+

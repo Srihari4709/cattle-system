@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="space-y-6">
+    <div><h1 class="text-2xl font-extrabold text-slate-900">Customer Orders</h1><p class="text-xs text-slate-500 mt-1">Review products purchased by customers and update payment status.</p></div>
+    <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="px-5 py-3 text-left">Customer</th><th class="px-5 py-3 text-left">Product</th><th class="px-5 py-3 text-right">Quantity</th><th class="px-5 py-3 text-right">Value</th><th class="px-5 py-3 text-center">Payment</th><th class="px-5 py-3 text-left">Date</th></tr></thead>
+            <tbody class="divide-y divide-slate-100">
+            {% for order in orders %}<tr><td class="px-5 py-4 font-bold text-slate-800">{{ order.customer_name }}</td><td class="px-5 py-4 text-slate-700">{{ order.product_name }}{% if order.notes %}<span class="block text-xs text-slate-400">{{ order.notes }}</span>{% endif %}</td><td class="px-5 py-4 text-right">{{ order.quantity }}</td><td class="px-5 py-4 text-right font-bold">₹{{ "%.2f"|format(order.unit_price * order.quantity) }}</td><td class="px-5 py-4 text-center"><span class="block text-[10px] text-slate-500">{{ order.payment_method }}{% if order.payment_reference %} · {{ order.payment_reference }}{% endif %}</span><form method="POST" class="inline-flex items-center gap-2 mt-1"><input type="hidden" name="order_id" value="{{ order.id }}"><select name="payment_status" onchange="this.form.submit()" class="text-xs rounded-lg border {% if order.payment_status == 'Paid' %}border-emerald-200 text-emerald-700{% else %}border-amber-200 text-amber-700{% endif %}"><option value="Unpaid" {% if order.payment_status == 'Unpaid' %}selected{% endif %}>Unpaid</option><option value="Payment Submitted" {% if order.payment_status == 'Payment Submitted' %}selected{% endif %}>Payment Submitted</option><option value="Paid" {% if order.payment_status == 'Paid' %}selected{% endif %}>Paid</option></select></form></td><td class="px-5 py-4 text-xs text-slate-400">{{ order.created_at }}</td></tr>{% else %}<tr><td colspan="6" class="px-5 py-10 text-center text-slate-500">No customer purchases yet.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,841 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-6 print-full-width">
+    
+    <!-- Header with Print & Quick Actions -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0 no-print">
+        <div class="flex items-center space-x-3">
+            <a href="{{ url_for('cattle_list') }}" class="w-10 h-10 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-emerald-700 hover:border-emerald-300 transition shadow-sm">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-extrabold text-slate-900 flex items-center space-x-2">
+                    <span>{{ analysis.name }}</span>
+                    <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded-full font-mono font-bold">{{ analysis.cattle_id }}</span>
+                </h1>
+                <p class="text-xs text-slate-500 font-medium">Explainable health diagnostics, GPS geotracking & waste valuation.</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center space-x-2.5">
+            <a href="{{ url_for('cattle_quick_view', id=analysis.cattle_id) }}" target="_blank" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">
+                <i class="fa-solid fa-qrcode text-emerald-700"></i>
+                <span>Mobile Pass</span>
+            </a>
+            <button onclick="window.print()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">
+                <i class="fa-solid fa-print"></i>
+                <span>Print Report</span>
+            </button>
+            <button onclick="document.getElementById('loggingSectionCard').scrollIntoView({behavior: 'smooth'})" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">
+                <i class="fa-solid fa-plus"></i>
+                <span>Log Activity</span>
+            </button>
+            <a href="{{ url_for('log_vaccination_booster', id=analysis.cattle_id) }}" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">
+                <i class="fa-solid fa-syringe"></i>
+                <span>Log Booster</span>
+            </a>
+            <a href="{{ url_for('edit_cattle', id=analysis.cattle_id) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">
+                <i class="fa-solid fa-pen-to-square"></i>
+                <span>Edit Details</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- PRINT HEADER (Visible only on paper / export) -->
+    <div class="hidden print:flex items-center justify-between border-b-2 border-emerald-800 pb-6 mb-6">
+        <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-cow text-4xl text-emerald-800"></i>
+            <div>
+                <h1 class="text-2xl font-bold text-emerald-900">SMART KANGEYAM CATTLE SYSTEM</h1>
+                <p class="text-xs text-slate-500">Official Health Diagnostics & Digital Identity Pass</p>
+            </div>
+        </div>
+        <div class="text-right text-xs">
+            <p class="font-semibold text-slate-700">Date Issued: {{ datetime_str }}</p>
+            <p>Animal ID Reference: <span class="font-bold font-mono">{{ analysis.cattle_id }}</span></p>
+        </div>
+    </div>
+
+    <!-- Feature 1 & 2: Animal Core Profile Hero Card + Digital QR Identity Tag -->
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-4 border-b border-slate-100">
+            <!-- Left: Cattle Photo -->
+            <div class="lg:col-span-1 p-5 flex flex-col items-center justify-center bg-slate-50 border-r border-slate-100">
+                <div class="relative w-full max-w-[220px] aspect-square rounded-2xl overflow-hidden shadow-md border border-slate-200 group">
+                    <img src="{{ analysis.image_url or 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=600&q=80' }}" 
+                         alt="{{ analysis.name }}" class="w-full h-full object-cover">
+                    <div class="absolute bottom-2 left-2 bg-slate-900/80 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[10px] font-bold">
+                        {{ analysis.breed }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle: 12 Key Parameter Grid -->
+            <div class="lg:col-span-2 p-6 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                        <span class="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Clinical Registry & Input Telemetry</span>
+                        <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                            Status: {{ analysis.status }}
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
+                        <div>
+                            <p class="text-slate-400 font-semibold">1. Animal Tag ID</p>
+                            <p class="font-mono font-bold text-emerald-800 text-sm">{{ analysis.cattle_id }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 font-semibold">2. Age</p>
+                            <p class="font-bold text-slate-900 text-sm">{{ analysis.age }} Years</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 font-semibold">3. Market Valuation</p>
+                            <p class="font-extrabold text-emerald-700 text-sm">₹{{ "{:,}".format(analysis.market_value|int) }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 font-semibold">4. Milk Yield (Latest)</p>
+                            <p class="font-bold text-slate-900 text-sm">{% if chart_milk %} {{ chart_milk[-1] }} L/day {% else %} 0.0 L {% endif %}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 font-semibold">5. Feed Intake</p>
+                            <p class="font-bold text-slate-900 text-sm">{% if chart_feed %} {{ chart_feed[-1] }} kg/day {% else %} 0.0 kg {% endif %}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 font-semibold">6. Productivity Trend</p>
+                            <p class="font-bold mt-0.5">
+                                {% if 'Sudden Milk Drop Alert' in analysis.global_alerts %}
+                                    <span class="text-red-600 font-bold"><i class="fa-solid fa-arrow-trend-down"></i> Sudden Drop</span>
+                                {% elif 'Declining Milk Yield Alert' in analysis.global_alerts %}
+                                    <span class="text-amber-600 font-bold"><i class="fa-solid fa-arrow-trend-down"></i> Declining</span>
+                                {% else %}
+                                    <span class="text-emerald-600 font-bold"><i class="fa-solid fa-arrow-trend-up"></i> Stable</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 font-semibold">7. Daily Overhead</p>
+                            <p class="font-bold text-slate-900 text-sm">₹{{ "{:,}".format(chart_expenses[-1]|int if chart_expenses else 0) }}/day</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 font-semibold">8. Vaccination Status</p>
+                            <p class="font-bold mt-0.5">
+                                {% if 'Vaccination Overdue Alert' in analysis.global_alerts %}
+                                    <span class="text-red-600 font-bold"><i class="fa-solid fa-circle-exclamation"></i> Overdue</span>
+                                {% else %}
+                                    <span class="text-emerald-600 font-bold"><i class="fa-solid fa-circle-check"></i> Up to Date</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 font-semibold">9. Medical Expense (30d)</p>
+                            <p class="font-bold text-rose-700 text-sm">₹{{ "{:,}".format(health_records|sum(attribute='cost')|int) }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Feature 2 Scannable QR Code Identity Badge -->
+            <div class="lg:col-span-1 p-6 bg-slate-50 border-l border-slate-100 flex flex-col items-center justify-between text-center">
+                <div class="w-full">
+                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">Scannable QR Tag</span>
+                    <p class="font-bold text-slate-900 text-xs mt-0.5">Field GPS & Health Pass</p>
+                </div>
+
+                <div class="my-2 p-2 bg-white rounded-2xl shadow-sm border border-slate-200">
+                    <img src="{{ url_for('cattle_qr_code', id=analysis.cattle_id) }}" alt="QR Code" class="w-28 h-28 object-contain mx-auto">
+                </div>
+
+                <div class="w-full space-y-1 text-[11px]">
+                    <a href="{{ url_for('cattle_qr_code', id=analysis.cattle_id) }}" download="QR_{{ analysis.cattle_id }}.png" class="w-full block bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold py-1.5 rounded-lg transition text-center border border-emerald-200">
+                        <i class="fa-solid fa-download mr-1"></i> Download Tag PNG
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weighted Decision Engine Card (Overall Indicator Gauge) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Big Overall Indicator Gauge -->
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between items-center text-center">
+            <div class="w-full text-left">
+                <h2 class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Weighted Decision Engine</h2>
+                <h3 class="text-base font-bold text-slate-900 mt-0.5">Overall Diagnostic Score</h3>
+            </div>
+            
+            <div class="my-6 relative flex flex-col items-center justify-center">
+                <div class="w-40 h-40 rounded-full border-[10px] flex flex-col items-center justify-center shadow-inner
+                    {% if analysis.overall_score >= 76 %} border-emerald-500 bg-emerald-50/20 
+                    {% elif analysis.overall_score >= 50 %} border-amber-500 bg-amber-50/20 
+                    {% else %} border-red-500 bg-red-50/20 {% endif %}">
+                    <span class="text-4xl font-black text-slate-900">{{ analysis.overall_score }}</span>
+                    <span class="text-xs font-semibold text-slate-400">Score / 100</span>
+                </div>
+                
+                <div class="mt-3 flex items-center space-x-1 text-xs font-bold">
+                    <span class="text-slate-400">Confidence Level:</span>
+                    <span class="text-emerald-700">{{ analysis.confidence_level }}%</span>
+                </div>
+            </div>
+
+            <!-- Recommendation Alert tag -->
+            <div class="w-full p-3.5 rounded-2xl flex flex-col items-center space-y-0.5
+                {% if analysis.recommendation == 'Continue Dairy Production' %} bg-emerald-50 text-emerald-900 border border-emerald-200
+                {% elif analysis.recommendation == 'Breeding Candidate' %} bg-blue-50 text-blue-900 border border-blue-200
+                {% elif analysis.recommendation == 'Monitor Closely' %} bg-amber-50 text-amber-900 border border-amber-200
+                {% else %} bg-red-50 text-red-900 border border-red-200 {% endif %}">
+                <span class="text-[10px] uppercase tracking-wider font-extrabold">Recommendation Status</span>
+                <span class="text-sm font-extrabold flex items-center justify-center">
+                    {% if analysis.recommendation == 'Continue Dairy Production' %}
+                        <i class="fa-solid fa-circle-check mr-1.5"></i> Continue Dairy Production
+                    {% elif analysis.recommendation == 'Breeding Candidate' %}
+                        <i class="fa-solid fa-seedling mr-1.5"></i> Breeding Candidate
+                    {% elif analysis.recommendation == 'Monitor Closely' %}
+                        <i class="fa-solid fa-triangle-exclamation mr-1.5"></i> Monitor Closely
+                    {% else %}
+                        <i class="fa-solid fa-handshake-slash mr-1.5"></i> Consider Sale
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- Explainable Diagnostics AI Reasons -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+            <div>
+                <h2 class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Explainable Recommendation Details</h2>
+                <h3 class="text-base font-bold text-slate-900 mt-0.5">Diagnostic Rationale</h3>
+                
+                <div class="mt-3 space-y-2">
+                    {% for bullets in analysis.explanation %}
+                        <p class="text-xs md:text-sm text-slate-700 leading-relaxed font-semibold">
+                            &bull; {{ bullets }}
+                        </p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Strength vs Weakness list -->
+            <div class="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div>
+                    <h4 class="font-bold text-emerald-800 uppercase tracking-wide mb-1.5 flex items-center space-x-1">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Strengths & Positives</span>
+                    </h4>
+                    <ul class="space-y-1 text-slate-650 font-medium">
+                        {% for exp in analysis.all_explanations %}
+                            <li class="flex items-start">
+                                <span class="text-emerald-500 mr-1.5 font-bold">&#10003;</span>
+                                <span>{{ exp }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-red-800 uppercase tracking-wide mb-1.5 flex items-center space-x-1">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                        <span>Penalties & Risk Triggers</span>
+                    </h4>
+                    {% if analysis.all_penalties or analysis.global_alerts %}
+                        <ul class="space-y-1 text-slate-650 font-medium">
+                            {% for p in analysis.all_penalties %}
+                                <li class="flex items-start">
+                                    <span class="text-red-500 mr-1.5 font-bold">&#9888;</span>
+                                    <span>{{ p }}</span>
+                                </li>
+                            {% endfor %}
+                            {% for ga in analysis.global_alerts %}
+                                <li class="flex items-start text-red-700 font-semibold">
+                                    <span class="text-red-600 mr-1.5 font-bold">&#9888;</span>
+                                    <span>{{ ga }} (Global)</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-slate-400 italic">No clinical penalties applied.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Module Scores Breakdown -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Health Score -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-400 uppercase">Health Module</span>
+                <span class="text-red-500 font-bold text-xs">30% wt</span>
+            </div>
+            <div class="my-3">
+                <p class="text-2xl font-black text-slate-900">{{ analysis.health_score }}<span class="text-xs text-slate-400">/100</span></p>
+                <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                    <div class="bg-emerald-500 h-1.5 rounded-full" style="width: {{ analysis.health_score }}%"></div>
+                </div>
+            </div>
+            <p class="text-[10px] text-slate-500">Vaccines, treatments, medical history.</p>
+        </div>
+
+        <!-- Productivity Score -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-400 uppercase">Productivity</span>
+                <span class="text-blue-500 font-bold text-xs">30% wt</span>
+            </div>
+            <div class="my-3">
+                <p class="text-2xl font-black text-slate-900">{{ analysis.productivity_score }}<span class="text-xs text-slate-400">/100</span></p>
+                <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                    <div class="bg-blue-500 h-1.5 rounded-full" style="width: {{ analysis.productivity_score }}%"></div>
+                </div>
+            </div>
+            <p class="text-[10px] text-slate-500">Yield consistency, drops & lactation.</p>
+        </div>
+
+        <!-- Economic Score -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-400 uppercase">Economic</span>
+                <span class="text-yellow-500 font-bold text-xs">25% wt</span>
+            </div>
+            <div class="my-3">
+                <p class="text-2xl font-black text-slate-900">{{ analysis.economic_score }}<span class="text-xs text-slate-400">/100</span></p>
+                <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                    <div class="bg-yellow-500 h-1.5 rounded-full" style="width: {{ analysis.economic_score }}%"></div>
+                </div>
+            </div>
+            <p class="text-[10px] text-slate-500">Feed margin vs maintenance cost.</p>
+        </div>
+
+        <!-- Breeding Score -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-400 uppercase">Breeding</span>
+                <span class="text-purple-500 font-bold text-xs">15% wt</span>
+            </div>
+            <div class="my-3">
+                <p class="text-2xl font-black text-slate-900">{{ analysis.breeding_score }}<span class="text-xs text-slate-400">/100</span></p>
+                <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                    <div class="bg-purple-500 h-1.5 rounded-full" style="width: {{ analysis.breeding_score }}%"></div>
+                </div>
+            </div>
+            <p class="text-[10px] text-slate-500">Age, heat estrus, calving intervals.</p>
+        </div>
+    </div>
+
+    <!-- Charts Visualization Section -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Production Trend (30 Days)</h3>
+            <div class="h-60">
+                <canvas id="yieldChart"></canvas>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Daily Cost vs Revenue (30 Days)</h3>
+            <div class="h-60">
+                <canvas id="financeChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 6: COST-EFFICIENT QR GPS GEOLOCATION CHECKPOINT MAP -->
+    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+            <div>
+                <h3 class="text-base font-bold text-slate-900 flex items-center space-x-2">
+                    <i class="fa-solid fa-map-pin text-emerald-600"></i>
+                    <span>Cattle Location Tracking & Pasture Checkpoints</span>
+                </h3>
+                <p class="text-xs text-slate-400">Cost-efficient QR scan geolocation logging (No expensive collar batteries required).</p>
+            </div>
+            
+            <!-- Quick GPS Geostamp button -->
+            <button onclick="getCurrentLocationAndLog()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">
+                <i class="fa-solid fa-location-crosshairs"></i>
+                <span>Log Current GPS Position</span>
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <!-- Map container -->
+            <div class="lg:col-span-2 h-72 rounded-2xl overflow-hidden border border-slate-200" id="cattleDetailMap"></div>
+            
+            <!-- Location logs history -->
+            <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 overflow-y-auto max-h-72 text-xs space-y-2.5">
+                <span class="font-bold text-slate-700 uppercase tracking-wider block text-[10px]">Checkpoint Scan Logs</span>
+                {% if gps_logs %}
+                    {% for g in gps_logs %}
+                        <div class="p-2.5 bg-white rounded-xl border border-slate-200 space-y-1 shadow-sm">
+                            <div class="flex items-center justify-between font-bold text-slate-900">
+                                <span><i class="fa-solid fa-location-dot text-emerald-600 mr-1"></i> {{ g.location_name }}</span>
+                                <span class="text-[10px] text-slate-400">{{ g.created_at.split(' ')[0] if g.created_at else '' }}</span>
+                            </div>
+                            <p class="text-slate-500 font-mono text-[10px]">Lat: {{ g.latitude }}, Lon: {{ g.longitude }}</p>
+                            <p class="text-slate-400 text-[10px]">Scanned by: {{ g.scanned_by }} &bull; {{ g.notes }}</p>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-slate-400 italic text-center py-6">No GPS checkpoint scans recorded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Logger Forms logging section (Feature 8: Organic Waste tab included) -->
+    <div id="loggingSectionCard" class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-5 no-print">
+        <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center space-x-2">
+                <i class="fa-solid fa-feather-pointed text-emerald-600"></i>
+                <span>Log New Farm Activity & Organic Waste</span>
+            </h2>
+            <p class="text-xs text-slate-400">Select log category to record daily telemetry into the database.</p>
+        </div>
+        
+        <!-- Tab buttons -->
+        <div class="flex border-b border-slate-200 overflow-x-auto">
+            <button onclick="switchTab('tab-production')" id="btn-tab-production" class="px-4 py-2 border-b-2 border-emerald-600 text-emerald-700 font-bold text-xs whitespace-nowrap">
+                Production & Feed
+            </button>
+            <button onclick="switchTab('tab-waste')" id="btn-tab-waste" class="px-4 py-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-bold text-xs whitespace-nowrap">
+                Daily Dung & Organic Waste
+            </button>
+            <button onclick="switchTab('tab-health')" id="btn-tab-health" class="px-4 py-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-bold text-xs whitespace-nowrap">
+                Health Checkup / Vaccine
+            </button>
+            <button onclick="switchTab('tab-breeding')" id="btn-tab-breeding" class="px-4 py-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-bold text-xs whitespace-nowrap">
+                Breeding & Estrus
+            </button>
+            <button onclick="switchTab('tab-financial')" id="btn-tab-financial" class="px-4 py-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-bold text-xs whitespace-nowrap">
+                Housing / Market Value
+            </button>
+        </div>
+
+        <!-- Tab contents -->
+        <div>
+            <!-- Production Tab Form -->
+            <form id="tab-production" action="{{ url_for('add_log', id=analysis.cattle_id) }}" method="POST" class="space-y-4 tab-content">
+                <input type="hidden" name="log_type" value="production">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Date</label>
+                        <input type="date" name="log_date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Milk Production (Liters)</label>
+                        <input type="number" step="0.1" name="milk_production" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Feed Intake (kg)</label>
+                        <input type="number" step="0.1" name="feed_consumption" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs font-bold transition shadow-sm">
+                        Save Production Log
+                    </button>
+                </div>
+            </form>
+
+            <!-- Feature 8: Organic Waste Tab Form -->
+            <form id="tab-waste" action="{{ url_for('add_log', id=analysis.cattle_id) }}" method="POST" class="space-y-4 tab-content hidden">
+                <input type="hidden" name="log_type" value="waste">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Date</label>
+                        <input type="date" name="log_date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Dung Collected (kg)</label>
+                        <input type="number" step="0.1" name="dung_weight_kg" placeholder="e.g. 12.5" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Urine Output (Liters, Optional)</label>
+                        <input type="number" step="0.1" name="urine_liters" placeholder="e.g. 7.0" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Notes / Collection Details</label>
+                        <input type="text" name="notes" placeholder="e.g. Morning stall collection for biogas digester" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 rounded-xl text-xs font-bold transition shadow-sm">
+                        Save Waste Log & Update Biogas
+                    </button>
+                </div>
+            </form>
+
+            <!-- Health Tab Form -->
+            <form id="tab-health" action="{{ url_for('add_log', id=analysis.cattle_id) }}" method="POST" class="space-y-4 tab-content hidden">
+                <input type="hidden" name="log_type" value="health">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Date</label>
+                        <input type="date" name="log_date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Event Type</label>
+                        <select name="health_type" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                            <option value="vaccination">Vaccination Booster</option>
+                            <option value="medical_treatment">Veterinary Treatment</option>
+                            <option value="checkup">Routine Health Checkup</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Cost incurred (₹)</label>
+                        <input type="number" step="1" name="cost" placeholder="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Treatment Description Details</label>
+                        <input type="text" name="details" required placeholder="e.g. FMD vaccination dose / antibiotic prescription" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs font-bold transition shadow-sm">
+                        Add Health Record
+                    </button>
+                </div>
+            </form>
+
+            <!-- Breeding Tab Form -->
+            <form id="tab-breeding" action="{{ url_for('add_log', id=analysis.cattle_id) }}" method="POST" class="space-y-4 tab-content hidden">
+                <input type="hidden" name="log_type" value="breeding">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Date</label>
+                        <input type="date" name="log_date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Event Type</label>
+                        <select name="event_type" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                            <option value="heat">Estrus / Heat cycle detected</option>
+                            <option value="insemination">Artificial Insemination (AI)</option>
+                            <option value="calving">Calving event (Calf Born)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Calving Interval (Days)</label>
+                        <input type="number" name="calving_interval" placeholder="e.g. 365" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Breeding Description / Sire Info</label>
+                        <input type="text" name="details" required placeholder="e.g. Artificial Insemination with Kangeyam Bull Semen" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs font-bold transition shadow-sm">
+                        Add Breeding Record
+                    </button>
+                </div>
+            </form>
+
+            <!-- Financial Tab Form -->
+            <form id="tab-financial" action="{{ url_for('add_log', id=analysis.cattle_id) }}" method="POST" class="space-y-4 tab-content hidden">
+                <input type="hidden" name="log_type" value="financial">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Date</label>
+                        <input type="date" name="log_date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Feed Cost (₹/day)</label>
+                        <input type="number" step="0.1" min="0" name="feed_cost" value="0" required class="maintenance-component w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Current Estimated Market Value (₹)</label>
+                        <input type="number" step="1" name="market_value" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Labor Cost (₹/day)</label>
+                        <input type="number" step="0.1" min="0" name="labor_cost" value="0" required class="maintenance-component w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Housing Cost (₹/day)</label>
+                        <input type="number" step="0.1" min="0" name="housing_cost" value="0" required class="maintenance-component w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Medicine Cost (₹/day)</label>
+                        <input type="number" step="0.1" min="0" name="medicine_cost" value="0" required class="maintenance-component w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Other Cost (₹/day)</label>
+                        <input type="number" step="0.1" min="0" name="other_cost" value="0" required class="maintenance-component w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 block mb-1">Calculated Maintenance Cost (₹/day)</label>
+                        <input type="number" id="maintenanceTotal" name="maintenance_cost" value="0" readonly class="w-full bg-emerald-50 border border-emerald-200 rounded-xl py-2 px-3 text-xs font-extrabold text-emerald-800">
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs font-bold transition shadow-sm">
+                        Update Valuation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Historical Data Log Tables -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Health Log Table -->
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100">
+                <h3 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center space-x-1.5">
+                    <i class="fa-solid fa-heart-pulse text-emerald-600"></i>
+                    <span>Health & Vaccines Log Book</span>
+                </h3>
+            </div>
+            <div class="overflow-x-auto max-h-64">
+                <table class="min-w-full divide-y divide-slate-100 text-xs">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left font-bold text-slate-500">Date</th>
+                            <th class="px-4 py-2 text-left font-bold text-slate-500">Type</th>
+                            <th class="px-4 py-2 text-left font-bold text-slate-500">Details</th>
+                            <th class="px-4 py-2 text-right font-bold text-slate-500">Cost (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 bg-white">
+                        {% if health_records %}
+                            {% for hr in health_records %}
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-4 py-2 whitespace-nowrap text-slate-600 font-mono">{{ hr.record_date }}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap">
+                                        <span class="px-2 py-0.5 rounded font-bold uppercase text-[9px] 
+                                            {% if hr.record_type == 'vaccination' %} bg-blue-100 text-blue-800
+                                            {% elif hr.record_type == 'medical_treatment' %} bg-rose-100 text-rose-800
+                                            {% else %} bg-slate-100 text-slate-800 {% endif %}">
+                                            {{ hr.record_type.split('_')|join(' ') }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-2 font-medium text-slate-800">{{ hr.details }}</td>
+                                    <td class="px-4 py-2 text-right font-bold text-slate-900">₹{{ "{:,}".format(hr.cost|int) }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="px-4 py-6 text-center text-slate-400 italic">No health records logged yet.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Waste History Log Table (Feature 8) -->
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100">
+                <h3 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center space-x-1.5">
+                    <i class="fa-solid fa-recycle text-amber-600"></i>
+                    <span>Dung & Organic Waste Records</span>
+                </h3>
+            </div>
+            <div class="overflow-x-auto max-h-64">
+                <table class="min-w-full divide-y divide-slate-100 text-xs">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left font-bold text-slate-500">Date</th>
+                            <th class="px-4 py-2 text-left font-bold text-slate-500">Dung (kg)</th>
+                            <th class="px-4 py-2 text-left font-bold text-slate-500">Urine (L)</th>
+                            <th class="px-4 py-2 text-left font-bold text-slate-500">Biogas Potential</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 bg-white">
+                        {% if waste_records %}
+                            {% for wr in waste_records %}
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-4 py-2 whitespace-nowrap text-slate-600 font-mono">{{ wr.record_date }}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap font-bold text-slate-900">{{ wr.dung_weight_kg }} kg</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-slate-600">{{ wr.urine_liters }} L</td>
+                                    <td class="px-4 py-2 font-semibold text-emerald-700">~{{ (wr.dung_weight_kg * 0.045)|round(2) }} m³</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="px-4 py-6 text-center text-slate-400 italic">No waste logs recorded yet.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Tab Switching & Leaflet Map Scripts -->
+<script>
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(form => form.classList.add('hidden'));
+        document.querySelectorAll('[id^="btn-tab-"]').forEach(btn => {
+            btn.classList.remove('border-emerald-600', 'text-emerald-700', 'font-bold');
+            btn.classList.add('border-transparent', 'text-slate-500', 'font-bold');
+        });
+        
+        document.getElementById(tabId).classList.remove('hidden');
+        const activeBtn = document.getElementById('btn-' + tabId);
+        activeBtn.classList.remove('border-transparent', 'text-slate-500');
+        activeBtn.classList.add('border-emerald-600', 'text-emerald-700');
+    }
+
+    const requestedTab = new URLSearchParams(window.location.search).get('tab');
+    if (requestedTab === 'health') {
+        switchTab('tab-health');
+        document.getElementById('loggingSectionCard').scrollIntoView({behavior: 'smooth'});
+    }
+
+    document.querySelectorAll('.maintenance-component').forEach(input => {
+        input.addEventListener('input', function() {
+            const total = Array.from(document.querySelectorAll('.maintenance-component'))
+                .reduce((sum, field) => sum + (parseFloat(field.value) || 0), 0);
+            document.getElementById('maintenanceTotal').value = total.toFixed(2);
+        });
+    });
+    
+    function getCurrentLocationAndLog() {
+        if (!navigator.geolocation) {
+            alert("Geolocation is not supported by your browser.");
+            return;
+        }
+        
+        navigator.geolocation.getCurrentPosition(function(pos) {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            const locName = prompt("Enter location checkpoint name (e.g., North Pasture, Barn Stall 4):", "Field Checkpoint");
+            if (!locName) return;
+
+            const formData = new FormData();
+            formData.append('latitude', lat);
+            formData.append('longitude', lon);
+            formData.append('location_name', locName);
+            formData.append('scanned_by', 'Mobile QR Geostamp');
+
+            fetch("{{ url_for('log_cattle_gps', id=analysis.cattle_id) }}", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert("GPS Position logged successfully!");
+                location.reload();
+            })
+            .catch(err => {
+                location.reload();
+            });
+        }, function(err) {
+            alert("Unable to retrieve GPS coordinates: " + err.message);
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Chart 1: Milk Yield vs Feed
+        const ctxYield = document.getElementById('yieldChart').getContext('2d');
+        new Chart(ctxYield, {
+            type: 'line',
+            data: {
+                labels: {{ chart_dates|tojson }},
+                datasets: [
+                    {
+                        label: 'Milk Yield (Liters)',
+                        data: {{ chart_milk|tojson }},
+                        borderColor: '#10b981',
+                        backgroundColor: '#10b98122',
+                        borderWidth: 2,
+                        tension: 0.25,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Feed Intake (kg)',
+                        data: {{ chart_feed|tojson }},
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: 'Liters' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: { drawOnChartArea: false },
+                        title: { display: true, text: 'kg' }
+                    }
+                }
+            }
+        });
+
+        // Chart 2: Cost vs Revenue
+        const ctxFinance = document.getElementById('financeChart').getContext('2d');
+        new Chart(ctxFinance, {
+            type: 'line',
+            data: {
+                labels: {{ chart_dates|tojson }},
+                datasets: [
+                    {
+                        label: 'Milk Revenue (₹)',
+                        data: {{ chart_revenues|tojson }},
+                        borderColor: '#10b981',
+                        backgroundColor: '#10b98122',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        fill: true
+                    },
+                    {
+                        label: 'Operating Cost (₹)',
+                        data: {{ chart_expenses|tojson }},
+                        borderColor: '#ef4444',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        title: { display: true, text: 'Rupees (₹)' }
+                    }
+                }
+            }
+        });
+
+        // Leaflet Map Initialization for Cattle
+        const initialLat = {% if gps_logs %} {{ gps_logs[0].latitude }} {% else %} 11.0063 {% endif %};
+        const initialLon = {% if gps_logs %} {{ gps_logs[0].longitude }} {% else %} 77.5639 {% endif %};
+        
+        const map = L.map('cattleDetailMap').setView([initialLat, initialLon], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        {% if gps_logs %}
+            {% for g in gps_logs %}
+                L.marker([{{ g.latitude }}, {{ g.longitude }}])
+                    .addTo(map)
+                    .bindPopup("<strong>{{ g.location_name }}</strong><br>Scanned: {{ g.created_at }}<br>By: {{ g.scanned_by }}");
+            {% endfor %}
+        {% endif %}
+    });
+</script>
+{% endblock %}

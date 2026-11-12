@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <div class="flex items-center space-x-3">
+        <a href="{{ url_for('cattle_detail', id=cattle.id) }}" class="w-10 h-10 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-emerald-700 transition shadow-sm" title="Back to diagnostic profile">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900">Edit Cattle Details</h1>
+            <p class="text-xs text-slate-500">Update the registry information for {{ cattle.name }}.</p>
+        </div>
+    </div>
+
+    <form action="{{ url_for('edit_cattle', id=cattle.id) }}" method="POST" class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Cattle ID</label>
+            <input value="{{ cattle.id }}" readonly class="w-full mt-1 bg-slate-100 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-mono font-bold text-slate-500 cursor-not-allowed">
+        </div>
+        <div>
+            <label for="name" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Name / Alias</label>
+            <input id="name" name="name" value="{{ cattle.name }}" required class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm">
+        </div>
+        <div>
+            <label for="age" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Age (Years)</label>
+            <input id="age" name="age" type="number" step="0.1" min="0" value="{{ cattle.age }}" required class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm">
+        </div>
+        <div>
+            <label for="breed" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Breed</label>
+            <input id="breed" name="breed" value="{{ cattle.breed }}" required class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm">
+        </div>
+        <div>
+            <label for="purchase_date" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Purchase Date</label>
+            <input id="purchase_date" name="purchase_date" type="date" value="{{ cattle.purchase_date or '' }}" class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm">
+        </div>
+        <div>
+            <label for="status" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Status</label>
+            <select id="status" name="status" class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm">
+                {% for option in ['Active', 'Under Treatment', 'Sold', 'Inactive'] %}
+                <option value="{{ option }}" {% if cattle.status == option %}selected{% endif %}>{{ option }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="purchase_price" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Purchase Price (₹)</label>
+            <input id="purchase_price" name="purchase_price" type="number" step="1" min="0" value="{{ cattle.purchase_price or 0 }}" class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm">
+        </div>
+        <div>
+            <label for="market_value" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Market Value (₹)</label>
+            <input id="market_value" name="market_value" type="number" step="1" min="0" value="{{ cattle.current_market_value or 0 }}" class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm">
+        </div>
+        <div class="md:col-span-2">
+            <label for="image_url" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Image URL</label>
+            <input id="image_url" name="image_url" type="url" value="{{ cattle.image_url or '' }}" class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm">
+        </div>
+        <div class="md:col-span-2 flex justify-end space-x-3 pt-4 border-t border-slate-100">
+            <a href="{{ url_for('cattle_detail', id=cattle.id) }}" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold transition">Cancel</a>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition shadow-sm">
+                <i class="fa-solid fa-floppy-disk mr-1"></i> Save Details
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <div><h1 class="text-2xl font-extrabold text-slate-900">Your Cart</h1><p class="text-xs text-slate-500 mt-1">Review products before sending your order request.</p></div>
+    {% if items %}
+    <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100">
+        {% for item in items %}
+        <div class="p-5 flex items-center justify-between gap-4">
+            <div><h2 class="font-bold text-slate-900">{{ item.product_name }}</h2><p class="text-xs text-slate-500">{{ item.quantity }} {{ item.unit }} × ₹{{ item.price }}</p>{% if item.notes %}<p class="text-xs text-slate-400 mt-1">{{ item.notes }}</p>{% endif %}</div>
+            <div class="flex items-center gap-3"><span class="font-extrabold text-emerald-700">₹{{ "%.2f"|format(item.price * item.quantity) }}</span><form method="POST"><input type="hidden" name="action" value="remove"><input type="hidden" name="index" value="{{ loop.index0 }}"><button class="text-red-600" title="Remove item"><i class="fa-solid fa-trash"></i></button></form></div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="bg-white rounded-2xl border border-slate-200 p-5 flex items-center justify-between"><span class="font-bold text-slate-600">Estimated total</span><span class="text-xl font-extrabold text-slate-900">₹{{ "%.2f"|format(total) }}</span></div>
+    <form method="POST" class="bg-white rounded-2xl border border-slate-200 p-5 space-y-4"><input type="hidden" name="action" value="checkout"><div><label class="block text-xs font-bold text-slate-600">Payment method<select id="paymentMethod" name="payment_method" class="mt-1 w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm"><option value="UPI">UPI</option><option value="Cash on delivery">Cash on delivery</option></select></label></div><div id="upiDetails" class="bg-cyan-50 border border-cyan-200 rounded-xl p-4 text-xs text-cyan-900"><p class="font-bold">Pay using UPI</p><p class="mt-1">Send ₹{{ "%.2f"|format(total) }} to <strong>{{ upi_id }}</strong>, then enter the transaction reference below.</p><label class="block mt-3 font-bold">UPI transaction reference<input name="payment_reference" placeholder="e.g. 409812345678" class="mt-1 w-full bg-white border border-cyan-200 rounded-lg py-2 px-3 text-sm"></label></div><button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-3 font-bold">Submit Order & Payment</button></form>
+    {% else %}<div class="bg-white rounded-2xl border border-slate-200 p-10 text-center"><i class="fa-solid fa-cart-shopping text-3xl text-slate-300"></i><p class="text-sm text-slate-500 mt-3">Your cart is empty.</p><a href="{{ url_for('customer_shop') }}" class="inline-block mt-4 text-emerald-700 font-bold text-sm">Browse Farm Shop</a></div>{% endif %}
+</div>
+<script>
+    const paymentMethod = document.getElementById('paymentMethod');
+    const upiDetails = document.getElementById('upiDetails');
+    paymentMethod.addEventListener('change', () => { upiDetails.classList.toggle('hidden', paymentMethod.value !== 'UPI'); });
+</script>
+{% endblock %}

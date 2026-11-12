@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900 flex items-center space-x-2">
+                <span>Cost-Efficient QR GPS Herd Tracking</span>
+                <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded-full font-bold">Feature 6</span>
+            </h1>
+            <p class="text-xs text-slate-500 font-medium">Zero-cost pasture tracking using smartphone QR geostamps when workers check stalls, grazing lands, and water troughs.</p>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <span class="bg-emerald-50 text-emerald-800 border border-emerald-300 px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow-sm">
+                <i class="fa-solid fa-satellite-dish text-emerald-600"></i>
+                <span>Kangeyam Pasture Coordinates (11.0063°N, 77.5639°E)</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Fleet Map & Active Locations -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Interactive Leaflet Map -->
+        <div class="lg:col-span-2 bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex flex-col">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-base font-bold text-slate-900 flex items-center space-x-2">
+                    <i class="fa-solid fa-map-location-dot text-emerald-600"></i>
+                    <span>Live Pasture Checkpoint Map</span>
+                </h2>
+                <span class="text-xs text-slate-400 font-semibold">{{ cattle_locations|length }} Cattle Active Pins</span>
+            </div>
+            
+            <div id="fleetMap" class="w-full h-96 rounded-2xl border border-slate-200 z-10"></div>
+        </div>
+
+        <!-- Latest Geostamp Feed -->
+        <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+            <div>
+                <h2 class="text-base font-bold text-slate-900 mb-1">Latest Scan Geostamps</h2>
+                <p class="text-xs text-slate-400 mb-3">Recent QR scans recorded by field hands.</p>
+            </div>
+
+            <div class="flex-1 overflow-y-auto space-y-2.5 max-h-80 text-xs">
+                {% if recent_logs %}
+                    {% for log in recent_logs %}
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-1 hover:bg-slate-100/70 transition">
+                            <div class="flex items-center justify-between font-bold text-slate-900">
+                                <a href="{{ url_for('cattle_detail', id=log.cattle_id) }}" class="text-emerald-800 hover:underline">
+                                    {{ log.name }} ({{ log.cattle_id }})
+                                </a>
+                                <span class="text-[10px] text-slate-400">{{ log.created_at.split(' ')[1] if ' ' in log.created_at else log.created_at }}</span>
+                            </div>
+                            <p class="text-slate-600 font-semibold flex items-center">
+                                <i class="fa-solid fa-location-dot text-emerald-600 mr-1.5"></i>
+                                {{ log.location_name }}
+                            </p>
+                            <p class="text-[10px] text-slate-400 font-mono">
+                                Lat: {{ log.latitude }}, Lon: {{ log.longitude }}
+                            </p>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-xs text-slate-400 italic text-center py-10">No recent QR scans recorded.</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Cattle Checkpoint Roster -->
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="text-base font-bold text-slate-900">Current Cattle Locations & Quick Scan Action</h2>
+            <p class="text-xs text-slate-400">Scan physical tag in shed or pasture to update GPS coordinates.</p>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-100 text-xs">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-6 py-3.5 text-left font-bold text-slate-500 uppercase tracking-wider">Animal</th>
+                        <th class="px-6 py-3.5 text-left font-bold text-slate-500 uppercase tracking-wider">Latest Location Checkpoint</th>
+                        <th class="px-6 py-3.5 text-left font-bold text-slate-500 uppercase tracking-wider">Coordinates</th>
+                        <th class="px-6 py-3.5 text-left font-bold text-slate-500 uppercase tracking-wider">Last Scanned</th>
+                        <th class="px-6 py-3.5 text-center font-bold text-slate-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                    {% for c in cattle_locations %}
+                    <tr class="hover:bg-slate-50/70 transition">
+                        <td class="px-6 py-3.5 whitespace-nowrap">
+                            <div class="flex items-center space-x-3">
+                                <img src="{{ c.image_url or 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=600&q=80' }}" 
+                                     alt="{{ c.name }}" class="w-10 h-10 rounded-xl object-cover border border-slate-200">
+                                <div>
+                                    <div class="font-bold text-slate-900 text-sm">{{ c.name }}</div>
+                                    <div class="font-mono text-emerald-800 text-[11px] font-bold">{{ c.cattle_id }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-3.5 whitespace-nowrap">
+                            <span class="font-bold text-slate-800 text-xs flex items-center">
+                                <i class="fa-solid fa-map-pin text-rose-500 mr-1.5"></i>
+                                {{ c.last_location }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-3.5 whitespace-nowrap font-mono text-slate-500 text-[11px]">
+                            {{ c.last_latitude }}, {{ c.last_longitude }}
+                        </td>
+                        <td class="px-6 py-3.5 whitespace-nowrap text-slate-500 text-xs">
+                            {{ c.last_scan_time or 'Seeded Default' }}
+                        </td>
+                        <td class="px-6 py-3.5 whitespace-nowrap text-center space-x-1.5">
+                            <a href="{{ url_for('cattle_quick_view', id=c.cattle_id) }}" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1.5 rounded-lg text-xs transition">
+                                <i class="fa-solid fa-qrcode mr-1"></i> Quick Pass
+                            </a>
+                            <a href="{{ url_for('cattle_detail', id=c.cattle_id) }}" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold px-3 py-1.5 rounded-lg text-xs transition">
+                                View Profile &rarr;
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- Leaflet Fleet Map Script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const map = L.map('fleetMap').setView([11.0063, 77.5639], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        {% for c in cattle_locations %}
+            L.marker([{{ c.last_latitude }}, {{ c.last_longitude }}])
+                .addTo(map)
+                .bindPopup("<strong>{{ c.name }} ({{ c.cattle_id }})</strong><br>Location: {{ c.last_location }}<br>Scanned: {{ c.last_scan_time or 'Today' }}");
+        {% endfor %}
+    });
+</script>
+{% endblock %}

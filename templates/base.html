@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Kangeyam Cattle Health & Market Decision System</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Leaflet Map CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        /* Custom scrollbar and print styles */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .print-full-width {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+            }
+        }
+        @keyframes tickerSlide {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .ticker-track {
+            display: inline-flex;
+            white-space: nowrap;
+            animation: tickerSlide 25s linear infinite;
+        }
+        .ticker-track:hover {
+            animation-play-state: paused;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Feature 10: FLASH NEWS / LIVE MILK MARKET VALUE TICKER -->
+    <div class="bg-slate-900 text-slate-200 text-xs py-2 px-4 border-b border-slate-800 flex items-center overflow-hidden shadow-inner no-print z-50">
+        <div class="flex-shrink-0 flex items-center space-x-2 bg-emerald-700 text-white font-extrabold px-2.5 py-1 rounded-md text-[11px] uppercase tracking-wider mr-3 shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-emerald-300 animate-ping"></span>
+            <span><i class="fa-solid fa-bolt mr-1"></i> Market Flash News</span>
+        </div>
+        
+        <div class="overflow-hidden flex-1 relative flex items-center">
+            <div class="ticker-track space-x-8 font-medium">
+                <span class="flex items-center space-x-1.5">
+                    <span class="text-slate-400">🥛 Yesterday Milk:</span>
+                    <span class="font-bold text-slate-200">₹{{ global_ticker.yesterday }}/L</span>
+                </span>
+                <span class="flex items-center space-x-1.5">
+                    <span class="text-slate-400">🥛 Today's Live Milk Price:</span>
+                    <span class="font-extrabold text-emerald-400">₹{{ global_ticker.today }}/L</span>
+                    <span class="text-emerald-400 text-[10px] font-bold">({{ global_ticker.trend }} +₹{{ global_ticker.diff }})</span>
+                </span>
+                <span class="flex items-center space-x-1.5">
+                    <span class="text-slate-400">📈 Tomorrow's Forecast:</span>
+                    <span class="font-extrabold text-amber-300">₹{{ global_ticker.tomorrow }}/L</span>
+                    <span class="text-amber-300 text-[10px]">(Bullish Expected)</span>
+                </span>
+                <span class="flex items-center space-x-1.5">
+                    <span class="text-slate-400">✨ Kangeyam A2 Special Rate:</span>
+                    <span class="font-extrabold text-cyan-300">₹{{ global_ticker.a2_premium }}/L</span>
+                </span>
+                <span class="flex items-center space-x-1.5">
+                    <span class="text-slate-400">⛅ Met Status:</span>
+                    <span class="font-semibold text-slate-300">{{ global_weather.temperature }}°C &bull; THI {{ global_weather.thi }} ({{ global_weather.risk_level }})</span>
+                </span>
+                <span class="flex items-center space-x-1.5">
+                    <span class="text-slate-400">📍 Mandi Pulse:</span>
+                    <span class="font-medium text-slate-300">{{ global_ticker.mandi_status }}</span>
+                </span>
+                <!-- Duplicate for seamless infinite loop -->
+                <span class="flex items-center space-x-1.5">
+                    <span class="text-slate-400">🥛 Yesterday Milk:</span>
+                    <span class="font-bold text-slate-200">₹{{ global_ticker.yesterday }}/L</span>
+                </span>
+                <span class="flex items-center space-x-1.5">
+                    <span class="text-slate-400">🥛 Today's Live Milk Price:</span>
+                    <span class="font-extrabold text-emerald-400">₹{{ global_ticker.today }}/L</span>
+                    <span class="text-emerald-400 text-[10px] font-bold">({{ global_ticker.trend }})</span>
+                </span>
+                <span class="flex items-center space-x-1.5">
+                    <span class="text-slate-400">📈 Tomorrow's Forecast:</span>
+                    <span class="font-extrabold text-amber-300">₹{{ global_ticker.tomorrow }}/L</span>
+                </span>
+                <span class="flex items-center space-x-1.5">
+                    <span class="text-slate-400">✨ Kangeyam A2 Premium:</span>
+                    <span class="font-extrabold text-cyan-300">₹{{ global_ticker.a2_premium }}/L</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <header class="bg-emerald-800 text-white shadow no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="{{ url_for('dashboard') }}" class="flex items-center space-x-3">
+                    <i class="fa-solid fa-cow text-3xl text-emerald-300"></i>
+                    <div>
+                        <span class="text-xl font-bold tracking-wide block leading-tight">Smart Kangeyam Cattle System</span>
+                        <span class="text-[10px] text-emerald-200 tracking-wider font-medium hidden sm:block">AI Health Diagnostics, Market Timing & Zero-Cost QR Geotracking</span>
+                    </div>
+                </a>
+            </div>
+            
+            {% if session.get('username') %}
+            <div class="flex items-center space-x-3 sm:space-x-4">
+                {% if session.get('role') == 'Customer' %}
+                <a href="{{ url_for('customer_cart') }}" title="Shopping cart" class="relative p-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white transition"><i class="fa-solid fa-cart-shopping"></i>{% if session.get('cart') %}<span class="absolute -top-1 -right-1 bg-amber-400 text-slate-900 text-[10px] w-5 h-5 rounded-full flex items-center justify-center">{{ session.get('cart')|length }}</span>{% endif %}</a>
+                <a href="{{ url_for('customer_account') }}" title="Customer account" class="p-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white transition"><i class="fa-solid fa-user"></i></a>
+                {% else %}
+                <!-- Voice Assistant Trigger Button -->
+                <button onclick="openVoiceModal()" title="Voice-Based Farmer Assistant" class="bg-emerald-700 hover:bg-emerald-600 border border-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">
+                    <i class="fa-solid fa-microphone text-amber-300 text-sm animate-pulse"></i>
+                    <span class="hidden md:inline">Voice Assistant</span>
+                </button>
+
+                <!-- Alerts Counter in Header -->
+                <a href="{{ url_for('alerts_center') }}" title="Alerts Center" class="relative p-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white transition">
+                    <i class="fa-solid fa-bell text-base"></i>
+                    {% if global_alert_count > 0 %}
+                    <span class="absolute -top-1 -right-1 bg-red-500 text-white font-bold text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-emerald-800">
+                        {{ global_alert_count }}
+                    </span>
+                    {% endif %}
+                </a>
+                {% endif %}
+
+                <!-- User Profile badge -->
+                <div class="hidden sm:flex flex-col text-right">
+                    <span class="text-xs font-semibold">{{ session.get('username').upper() }}</span>
+                    <span class="text-[10px] text-emerald-200">{{ session.get('role') }}</span>
+                </div>
+                <!-- Action Buttons -->
+                <a href="{{ url_for('logout') }}" class="bg-emerald-900/60 hover:bg-emerald-900 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition shadow-inner flex items-center space-x-1">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span class="hidden sm:inline">Logout</span>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="flex-1 flex flex-col md:flex-row max-w-7xl w-full mx-auto px-0 sm:px-4 lg:px-8 py-6">
+        
+        <!-- Sidebar Navigation -->
+        {% if session.get('username') %}
+        <aside class="w-full md:w-64 flex-shrink-0 px-4 md:px-0 mb-6 md:mb-0 no-print">
+            <nav class="space-y-1.5 bg-white p-4 rounded-2xl shadow-sm border border-slate-100 sticky top-4">
+                <div class="px-3 py-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    Main Menu
+                </div>
+
+                {% if session.get('role') == 'Customer' %}
+                <a href="{{ url_for('customer_shop') }}" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50"><i class="fa-solid fa-store w-5"></i><span>Farm Shop</span></a>
+                <a href="{{ url_for('customer_products') }}" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold {% if request.endpoint == 'customer_products' %}bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600{% else %}text-slate-600 hover:bg-slate-50{% endif %}"><i class="fa-solid fa-box-open w-5"></i><span>Add Products</span></a>
+                <a href="{{ url_for('customer_cart') }}" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50"><i class="fa-solid fa-cart-shopping w-5"></i><span>Cart</span></a>
+                <a href="{{ url_for('customer_account') }}" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50"><i class="fa-solid fa-user w-5"></i><span>Account</span></a>
+                <button onclick="openVoiceModal()" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-bold text-emerald-700 bg-emerald-50 text-left border border-emerald-200"><i class="fa-solid fa-microphone w-5"></i><span>Product Voice Assistant</span></button>
+                {% else %}
+                
+                <!-- 1. Dashboard -->
+                <a href="{{ url_for('dashboard') }}" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors {% if request.endpoint == 'dashboard' %} bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 {% else %} text-slate-600 hover:bg-slate-50 hover:text-slate-900 {% endif %}">
+                    <i class="fa-solid fa-chart-line text-lg {% if request.endpoint == 'dashboard' %} text-emerald-600 {% else %} text-slate-400 {% endif %} w-5"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                {% if session.get('role') == 'Cattle Owner' %}
+                <a href="{{ url_for('customer_orders') }}" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold {% if request.endpoint == 'customer_orders' %}bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600{% else %}text-slate-600 hover:bg-slate-50{% endif %}"><i class="fa-solid fa-receipt w-5"></i><span>Customer Orders</span></a>
+                {% endif %}
+
+                {% if session.get('role') != 'Cattle Owner' %}
+                <a href="{{ url_for('customer_shop') }}" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors {% if request.endpoint == 'customer_shop' %} bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 {% else %} text-slate-600 hover:bg-slate-50 hover:text-slate-900 {% endif %}">
+                    <i class="fa-solid fa-store text-lg {% if request.endpoint == 'customer_shop' %} text-emerald-600 {% else %} text-slate-400 {% endif %} w-5"></i>
+                    <span>Farm Shop</span>
+                </a>
+                {% endif %}
+
+                <a href="{{ url_for('maintenance_cost') }}" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors {% if request.endpoint == 'maintenance_cost' %} bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 {% else %} text-slate-600 hover:bg-slate-50 hover:text-slate-900 {% endif %}">
+                    <i class="fa-solid fa-calculator text-lg {% if request.endpoint == 'maintenance_cost' %} text-emerald-600 {% else %} text-slate-400 {% endif %} w-5"></i>
+                    <span>Maintenance Costs</span>
+                </a>
+                
+                <!-- 2. Cattle Records & Identity -->
+                <a href="{{ url_for('cattle_list') }}" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors {% if request.endpoint in ['cattle_list', 'cattle_detail'] %} bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 {% else %} text-slate-600 hover:bg-slate-50 hover:text-slate-900 {% endif %}">
+                    <i class="fa-solid fa-cow text-lg {% if request.endpoint in ['cattle_list', 'cattle_detail'] %} text-emerald-600 {% else %} text-slate-400 {% endif %} w-5"></i>
+                    <span>Cattle Records & QR</span>
+                </a>
+
+                <!-- 3. Market Timing Advisor (Feature 5) -->
+                <a href="{{ url_for('market_timing') }}" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors {% if request.endpoint == 'market_timing' %} bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 {% else %} text-slate-600 hover:bg-slate-50 hover:text-slate-900 {% endif %}">
+                    <i class="fa-solid fa-scale-balanced text-lg {% if request.endpoint == 'market_timing' %} text-emerald-600 {% else %} text-slate-400 {% endif %} w-5"></i>
+                    <span>Market Timing Advisor</span>
+                </a>
+
+                <!-- 4. Dedicated Alerts Center (Feature 7) -->
+                <a href="{{ url_for('alerts_center') }}" class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors {% if request.endpoint == 'alerts_center' %} bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 {% else %} text-slate-600 hover:bg-slate-50 hover:text-slate-900 {% endif %}">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-bell text-lg {% if request.endpoint == 'alerts_center' %} text-emerald-600 {% else %} text-slate-400 {% endif %} w-5"></i>
+                        <span>Alert System</span>
+                    </div>
+                    {% if global_alert_count > 0 %}
+                    <span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                        {{ global_alert_count }}
+                    </span>
+                    {% endif %}
+                </a>
+
+                <!-- 5. Waste Recording & Conversion Calculator (Features 8 & 9) -->
+                <a href="{{ url_for('waste_management') }}" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors {% if request.endpoint in ['waste_management', 'waste_calculator'] %} bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 {% else %} text-slate-600 hover:bg-slate-50 hover:text-slate-900 {% endif %}">
+                    <i class="fa-solid fa-recycle text-lg {% if request.endpoint in ['waste_management', 'waste_calculator'] %} text-emerald-600 {% else %} text-slate-400 {% endif %} w-5"></i>
+                    <span>Waste & Biogas</span>
+                </a>
+
+                <!-- 6. GPS Geolocation Tracking (Feature 6) -->
+                <a href="{{ url_for('gps_tracking_fleet') }}" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors {% if request.endpoint == 'gps_tracking_fleet' %} bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 {% else %} text-slate-600 hover:bg-slate-50 hover:text-slate-900 {% endif %}">
+                    <i class="fa-solid fa-location-dot text-lg {% if request.endpoint == 'gps_tracking_fleet' %} text-emerald-600 {% else %} text-slate-400 {% endif %} w-5"></i>
+                    <span>QR GPS Tracking</span>
+                </a>
+
+                <div class="pt-3 border-t border-slate-100 my-2"></div>
+                
+                <!-- Quick AI Voice Assistant Button -->
+                <button onclick="openVoiceModal()" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors text-left border border-emerald-200">
+                    <i class="fa-solid fa-microphone text-emerald-600 text-lg w-5"></i>
+                    <span>Farmer Voice Assistant</span>
+                </button>
+                
+                <form action="{{ url_for('reset_database') }}" method="POST" onsubmit="return confirm('Are you sure you want to reset the database? All custom logged entries will be cleared and default test cases seeded.');">
+                    <button type="submit" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors text-left mt-2">
+                        <i class="fa-solid fa-rotate-left text-sm text-red-400 w-5"></i>
+                        <span>Reset DB to Test Cases</span>
+                    </button>
+                </form>
+                {% endif %}
+            </nav>
+        </aside>
+        {% endif %}
+
+        <!-- Main Content Area -->
+        <main class="flex-1 px-4 md:px-6">
+            <!-- Flash Message Alerts -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mb-6 space-y-2 no-print">
+                        {% for category, message in messages %}
+                            <div class="p-4 rounded-xl border flex items-center justify-between {% if category == 'success' %} bg-emerald-50 border-emerald-200 text-emerald-800 {% elif category == 'danger' %} bg-red-50 border-red-200 text-red-800 {% else %} bg-amber-50 border-amber-200 text-amber-800 {% endif %}">
+                                <div class="flex items-center space-x-2">
+                                    {% if category == 'success' %}
+                                        <i class="fa-solid fa-circle-check text-lg"></i>
+                                    {% elif category == 'danger' %}
+                                        <i class="fa-solid fa-circle-xmark text-lg"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-circle-exclamation text-lg"></i>
+                                    {% endif %}
+                                    <span class="text-sm font-medium">{{ message }}</span>
+                                </div>
+                                <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- Route Specific Content -->
+            {% block content %}{% endblock %}
+        </main>
+        
+    </div>
+
+    <!-- Feature 3: VOICE-BASED FARMER ASSISTANT FLOATING MODAL -->
+    <div id="voiceAssistantModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 flex flex-col space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-md">
+                        <i class="fa-solid fa-headset text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-base">{% if session.get('role') == 'Customer' %}Kangeyam Product Voice Assistant{% else %}Kangeyam AI Farmer Voice Assistant{% endif %}</h3>
+                        <p class="text-xs text-slate-400">{% if session.get('role') == 'Customer' %}Ask about products, prices, orders, and delivery{% else %}Speak or type questions in English or Tamil{% endif %}</p>
+                    </div>
+                </div>
+                <button onclick="closeVoiceModal()" class="text-slate-400 hover:text-slate-600 p-2">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Assistant Conversation Log Box -->
+            <div id="voiceConversationBox" class="bg-slate-50 border border-slate-200 rounded-2xl p-4 min-h-[160px] max-h-[260px] overflow-y-auto text-sm space-y-3">
+                <div class="flex items-start space-x-2">
+                    <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold flex-shrink-0">AI</span>
+                    <div class="bg-white p-3 rounded-2xl border border-slate-200 text-slate-700 shadow-sm">
+                        <p class="font-semibold text-emerald-900">Vanakkam! How can I assist you today?</p>
+                        <p class="text-xs text-slate-500 mt-1">{% if session.get('role') == 'Customer' %}You can ask about colostrum, milk, milk products, organic fertilizer, biogas, prices, or ordering.{% else %}You can ask: <em>"What is the milk price?"</em>, <em>"How is Lakshmi doing?"</em>, <em>"What is today's heat risk?"</em>, or <em>"Calculate biogas for 50kg dung"</em>.{% endif %}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Speech Status & Waveform Indicator -->
+            <div id="voiceStatusIndicator" class="flex items-center justify-between text-xs text-slate-500 px-1">
+                <span id="voiceStatusText"><i class="fa-solid fa-circle text-slate-300 mr-1 text-[8px]"></i> Ready</span>
+                <span id="voiceLangText" class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">EN-IN / Multilingual</span>
+            </div>
+
+            <!-- Controls: Speech Input / Type Bar -->
+            <div class="flex items-center space-x-2">
+                <input type="text" id="voiceTextInput" placeholder="Type or click the microphone to speak..." 
+                       class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                       onkeypress="if(event.key === 'Enter') submitVoiceText()">
+                
+                <button id="micBtn" onclick="toggleSpeechRecognition()" 
+                        class="w-12 h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center text-lg shadow-md transition transform active:scale-95"
+                        title="Start Voice Recording">
+                    <i class="fa-solid fa-microphone"></i>
+                </button>
+                
+                <button onclick="submitVoiceText()" 
+                        class="w-12 h-12 rounded-xl bg-slate-800 hover:bg-slate-900 text-white flex items-center justify-center text-sm shadow-md transition"
+                        title="Send Query">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+
+            <!-- Audio readout switch -->
+            <div class="flex items-center justify-between text-xs text-slate-400 pt-1">
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="enableTtsCheckbox" checked class="rounded text-emerald-600 focus:ring-emerald-500">
+                    <span class="text-slate-600 font-medium">Read response aloud (Voice Synthesis)</span>
+                </label>
+                <button onclick="clearVoiceChat()" class="text-slate-400 hover:text-slate-600 text-xs">Clear chat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Voice Assistant Launcher (Bottom Right) -->
+    <div class="fixed bottom-6 right-6 z-40 no-print">
+        <button onclick="openVoiceModal()" class="group bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white p-4 rounded-full shadow-2xl flex items-center space-x-2 transition-all transform hover:scale-105 active:scale-95 border-2 border-white">
+            <i class="fa-solid fa-microphone text-xl animate-pulse text-amber-300"></i>
+            <span class="text-xs font-bold hidden sm:inline pr-1">Ask AI Assistant</span>
+        </button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-400 py-6 mt-auto border-t border-slate-700 no-print">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs space-y-2">
+            <p>&copy; 2026 Smart Kangeyam Cattle Health & Market Decision System. Built with Python, Flask, and SQLite.</p>
+            <p class="text-slate-500">Supporting Cattle Owners, Veterinarians, Cooperatives, and Market Agents with Real-time AI Diagnostics.</p>
+            <div class="border-t border-slate-700 pt-4 mt-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6">
+                <a href="tel:9488913224" class="hover:text-white"><i class="fa-solid fa-phone mr-1 text-emerald-400"></i>9488913224</a>
+                <a href="mailto:senthur270507@gmail.com" class="hover:text-white"><i class="fa-solid fa-envelope mr-1 text-emerald-400"></i>senthur270507@gmail.com</a>
+                <a href="https://www.google.com/maps/search/?api=1&query=M.Kumarasamy+College+of+Engineering,+Karur" target="_blank" rel="noopener" class="hover:text-white"><i class="fa-solid fa-location-dot mr-1 text-emerald-400"></i>M. Kumarasamy College of Engineering, Karur</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Voice Assistant JavaScript Engine -->
+    <script>
+        let recognition = null;
+        let isRecording = false;
+
+        function openVoiceModal() {
+            document.getElementById('voiceAssistantModal').classList.remove('hidden');
+            document.getElementById('voiceTextInput').focus();
+        }
+
+        function closeVoiceModal() {
+            document.getElementById('voiceAssistantModal').classList.add('hidden');
+            if (isRecording && recognition) {
+                recognition.stop();
+            }
+        }
+
+        function clearVoiceChat() {
+            document.getElementById('voiceConversationBox').innerHTML = `
+                <div class="flex items-start space-x-2">
+                    <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold flex-shrink-0">AI</span>
+                    <div class="bg-white p-3 rounded-2xl border border-slate-200 text-slate-700 shadow-sm">
+                        <p class="font-semibold text-emerald-900">Vanakkam! How can I assist you today?</p>
+                        <p class="text-xs text-slate-500 mt-1">Ask about milk rates, herd alerts, weather risk, or any cattle profile.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function toggleSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Speech recognition is not supported in this browser. Please use Google Chrome or type your question.");
+                return;
+            }
+
+            if (isRecording) {
+                recognition.stop();
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.lang = 'en-IN';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onstart = function() {
+                isRecording = true;
+                document.getElementById('micBtn').classList.add('bg-red-600', 'animate-ping');
+                document.getElementById('micBtn').classList.remove('bg-emerald-600');
+                document.getElementById('voiceStatusText').innerHTML = '<i class="fa-solid fa-circle text-red-500 mr-1 text-[8px] animate-ping"></i> Listening... Speak now!';
+            };
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('voiceTextInput').value = transcript;
+                sendVoiceQuery(transcript);
+            };
+
+            recognition.onerror = function(event) {
+                console.error("Speech recognition error:", event.error);
+                document.getElementById('voiceStatusText').innerHTML = '<i class="fa-solid fa-circle-exclamation text-amber-500 mr-1"></i> Audio not detected. Try typing.';
+            };
+
+            recognition.onend = function() {
+                isRecording = false;
+                document.getElementById('micBtn').classList.remove('bg-red-600', 'animate-ping');
+                document.getElementById('micBtn').classList.add('bg-emerald-600');
+                document.getElementById('voiceStatusText').innerHTML = '<i class="fa-solid fa-circle text-emerald-500 mr-1 text-[8px]"></i> Ready';
+            };
+
+            recognition.start();
+        }
+
+        function submitVoiceText() {
+            const textInput = document.getElementById('voiceTextInput');
+            const query = textInput.value.trim();
+            if (query) {
+                sendVoiceQuery(query);
+                textInput.value = '';
+            }
+        }
+
+        function sendVoiceQuery(query) {
+            const box = document.getElementById('voiceConversationBox');
+            
+            // Add user message to UI
+            box.innerHTML += `
+                <div class="flex items-start justify-end space-x-2">
+                    <div class="bg-emerald-600 text-white p-3 rounded-2xl text-sm shadow-sm max-w-[80%]">
+                        <p>${query}</p>
+                    </div>
+                    <span class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-bold flex-shrink-0">You</span>
+                </div>
+            `;
+            box.scrollTop = box.scrollHeight;
+
+            document.getElementById('voiceStatusText').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-emerald-600 mr-1"></i> Thinking...';
+
+            fetch("{{ url_for('voice_assistant_api') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ query: query })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('voiceStatusText').innerHTML = '<i class="fa-solid fa-circle text-emerald-500 mr-1 text-[8px]"></i> Ready';
+                
+                let linkHtml = '';
+                if (data.link) {
+                    linkHtml = `<a href="${data.link}" class="inline-block mt-2 text-xs font-bold text-emerald-700 hover:underline bg-emerald-50 px-2 py-1 rounded">Open Details &rarr;</a>`;
+                }
+
+                box.innerHTML += `
+                    <div class="flex items-start space-x-2">
+                        <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold flex-shrink-0">AI</span>
+                        <div class="bg-white p-3 rounded-2xl border border-slate-200 text-slate-800 shadow-sm max-w-[85%] text-xs md:text-sm">
+                            <div class="whitespace-pre-line leading-relaxed">${data.reply.replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')}</div>
+                            ${linkHtml}
+                        </div>
+                    </div>
+                `;
+                box.scrollTop = box.scrollHeight;
+
+                // TTS Speech Synthesis if enabled
+                const ttsEnabled = document.getElementById('enableTtsCheckbox').checked;
+                if (ttsEnabled && 'speechSynthesis' in window && data.speech) {
+                    window.speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(data.speech);
+                    utterance.rate = 1.0;
+                    utterance.pitch = 1.0;
+                    window.speechSynthesis.speak(utterance);
+                }
+            })
+            .catch(err => {
+                console.error("Voice API Error:", err);
+                document.getElementById('voiceStatusText').innerHTML = '<i class="fa-solid fa-circle-xmark text-red-500 mr-1"></i> Error processing request';
+            });
+        }
+    </script>
+
+</body>
+</html>
+
